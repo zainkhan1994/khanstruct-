@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Zain Khan — Builder & AI Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.4/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.4/ScrollTrigger.min.js"></script>
+<style>
+/* ── THEME TOKENS ── */
+:root{
+  --bg:#07070a; --surface:#0e0e16; --text:#edebe8;
+  --muted:#555; --dim:#2a2a3a; --border:rgba(255,255,255,0.07);
+  --blue:#4a9eff; --purple:#a855f7; --green:#22c55e;
+  --orange:#f97316; --gold:#fbbf24; --cyan:#06b6d4;
+  --tt:.6s;
+}
+[data-theme="light"]{
+  --bg:#f0ede8; --surface:#e6e2dc; --text:#111118;
+  --muted:#888; --dim:#d4cfc8; --border:rgba(0,0,0,0.09);
+}
+
+/* ── RESET ── */
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;overflow-x:hidden;}
+body{
+  font-family:'Space Grotesk',sans-serif;
+  background:var(--bg);color:var(--text);
+  cursor:none;overflow-x:hidden;
+  transition:background var(--tt),color var(--tt);
+}
+a,button{cursor:none;}
+
+/* ── GRAIN ── */
+#grain{
+  pointer-events:none;position:fixed;inset:0;z-index:9998;opacity:.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px;mix-blend-mode:overlay;
+}
+
+/* ── CUSTOM CURSOR (desktop only) ── */
+@media(pointer:fine){
+  #cur-ring,#cur-dot{position:fixed;pointer-events:none;z-index:9999;top:0;left:0;border-radius:50%;}
+  #cur-ring{
+    width:36px;height:36px;border:1.5px solid rgba(74,158,255,.7);
+    transform:translate(-50%,-50%);mix-blend-mode:difference;
+    transition:width .25s,height .25s,border-color .25s;
+  }
+  #cur-dot{width:5px;height:5px;background:var(--blue);transform:translate(-50%,-50%);}
+  body.ch #cur-ring{width:60px;height:60px;border-color:rgba(255,255,255,.5);}
+  body.ct #cur-ring{width:80px;height:80px;border-color:var(--blue);}
+}
+
+/* ══════════════════════════════════════
+   HERO — SPLIT SCREEN
+══════════════════════════════════════ */
+#hero{
+  display:grid;
+  grid-template-columns:58fr 42fr;
+  height:100vh;min-height:600px;
+  overflow:hidden;position:relative;
+}
+
+/* ── LEFT: Visual ── */
+.hero-vis{
+  position:relative;overflow:hidden;
+  background:#060610;
+  animation:revealZoom 3.4s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes revealZoom{
+  0%{transform:scale(1.16);filter:brightness(.45);}
+  100%{transform:scale(1);filter:brightness(1);}
+}
+
+/* Photo */
+.hero-photo{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:center top;
+  /* AI-style enhancement: boost contrast, subtle desaturate, cinematic */
+  filter:contrast(1.12) brightness(.96) saturate(.88);
+  display:block;
+}
+/* No photo fallback — particle canvas */
+#pcv{position:absolute;inset:0;width:100%;height:100%;display:block;}
+
+/* Photo grade overlays (cinematic treatment) */
+.photo-grade{
+  position:absolute;inset:0;pointer-events:none;
+  /* Bottom fade into site bg */
+  background:linear-gradient(180deg,rgba(6,6,16,0) 45%,rgba(6,6,16,.75) 100%);
+}
+.photo-grade::before{
+  content:'';position:absolute;inset:0;
+  /* Edge vignette */
+  background:radial-gradient(ellipse at center,transparent 38%,rgba(4,4,14,.55) 100%);
+}
+.photo-grade::after{
+  content:'';position:absolute;inset:0;
+  /* Right edge blend into content panel */
+  background:linear-gradient(90deg,transparent 60%,var(--bg) 100%);
+  transition:background var(--tt);
+}
+/* Subtle blue brand tint overlay */
+.photo-tint{
+  position:absolute;inset:0;pointer-events:none;
+  background:rgba(50,80,200,.1);
+  mix-blend-mode:color;
+}
+
+/* Day/Night toggle */
+#thm{
+  position:absolute;top:24px;right:24px;z-index:10;
+  display:flex;align-items:center;gap:10px;
+  background:rgba(0,0,0,.35);backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.14);
+  padding:9px 16px;
+  font-family:'Space Mono',monospace;font-size:9px;
+  letter-spacing:.22em;color:rgba(255,255,255,.8);text-transform:uppercase;
+  transition:background .3s;cursor:none;
+}
+#thm:hover{background:rgba(0,0,0,.55);}
+.thm-ic{width:18px;height:18px;position:relative;flex-shrink:0;}
+.thm-ic svg{position:absolute;inset:0;transition:opacity .4s,transform .4s;}
+.sun{opacity:0;transform:rotate(90deg)scale(.5);}
+[data-theme=light] .moon{opacity:0;transform:rotate(-90deg)scale(.5);}
+[data-theme=light] .sun{opacity:1;transform:rotate(0)scale(1);}
+
+.vis-label{
+  position:absolute;bottom:28px;left:32px;z-index:10;
+  font-family:'Space Mono',monospace;font-size:9px;
+  letter-spacing:.3em;color:rgba(255,255,255,.22);text-transform:uppercase;
+}
+
+/* ── RIGHT: Content ── */
+.hero-right{
+  display:flex;flex-direction:column;
+  padding:28px 44px 32px 48px;
+  background:var(--bg);
+  transition:background var(--tt);
+  overflow:hidden;
+  position:relative;
+}
+.h-nav{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:auto;
+  flex-shrink:0;
+}
+.h-logo{
+  font-family:'Space Mono',monospace;font-size:11px;
+  letter-spacing:.2em;color:var(--muted);text-transform:uppercase;
+}
+.h-links{display:flex;gap:28px;list-style:none;}
+.h-links a{
+  font-family:'Space Mono',monospace;font-size:9px;
+  letter-spacing:.16em;color:var(--muted);text-decoration:none;
+  text-transform:uppercase;transition:color .25s;
+}
+.h-links a:hover{color:var(--text);}
+
+/* Hamburger (mobile) */
+.hamburger{
+  display:none;flex-direction:column;gap:5px;
+  background:none;border:none;padding:4px;
+}
+.hamburger span{
+  display:block;width:22px;height:1.5px;background:var(--muted);
+  transition:all .3s;
+}
+.mobile-nav{
+  display:none;position:fixed;inset:0;
+  background:var(--bg);z-index:500;
+  flex-direction:column;align-items:center;justify-content:center;gap:40px;
+}
+.mobile-nav.open{display:flex;}
+.mobile-nav a{
+  font-size:32px;font-weight:700;letter-spacing:-.03em;
+  text-decoration:none;color:var(--text);
+  opacity:0;transform:translateY(30px);
+}
+.mobile-nav .m-close{
+  position:absolute;top:28px;right:28px;
+  background:none;border:none;font-size:28px;color:var(--text);cursor:none;
+}
+
+/* Hero text */
+.h-text{flex:1;display:flex;flex-direction:column;justify-content:center;padding:32px 0;}
+.h-tag{
+  font-family:'Space Mono',monospace;font-size:9px;
+  letter-spacing:.25em;color:var(--blue);text-transform:uppercase;
+  margin-bottom:20px;opacity:0;transform:translateY(16px);
+}
+h1.hh1{
+  font-size:clamp(36px,5.2vw,74px);
+  font-weight:700;line-height:.93;letter-spacing:-.04em;margin-bottom:28px;
+}
+.hl{overflow:hidden;display:block;}
+.hl span{display:block;transform:translateY(110%);}
+h1.hh1 em{font-style:italic;font-weight:300;color:var(--muted);}
+.h-desc{
+  font-size:14px;color:var(--muted);line-height:1.8;
+  max-width:340px;margin-bottom:36px;opacity:0;transform:translateY(16px);
+}
+.h-ctas{display:flex;gap:12px;flex-wrap:wrap;opacity:0;transform:translateY(16px);}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:12px 22px;text-decoration:none;
+  font-family:'Space Mono',monospace;font-size:10px;
+  letter-spacing:.12em;text-transform:uppercase;
+  border:1px solid var(--border);color:var(--text);
+  position:relative;overflow:hidden;transition:border-color .3s,color .3s;
+}
+.btn::before{
+  content:'';position:absolute;inset:0;
+  background:var(--blue);transform:translateY(101%);
+  transition:transform .42s cubic-bezier(.77,0,.18,1);
+}
+.btn:hover{border-color:var(--blue);color:#000;}
+.btn:hover::before{transform:translateY(0);}
+.btn span{position:relative;z-index:1;}
+.btn-ghost{background:transparent;}
+
+.h-foot{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  flex-shrink:0;opacity:0;
+}
+.h-foot p{
+  font-family:'Space Mono',monospace;font-size:9px;
+  letter-spacing:.16em;color:var(--muted);text-transform:uppercase;line-height:1.9;
+}
+.scroll-hint{display:flex;align-items:center;gap:12px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.18em;color:var(--muted);}
+.s-dot{width:5px;height:5px;border-radius:50%;background:var(--blue);animation:sb 2s ease-in-out infinite;}
+.s-line{width:36px;height:1px;background:var(--muted);}
+@keyframes sb{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+/* ══════════════════════════════════════
+   MARQUEE
+══════════════════════════════════════ */
+#mq{
+  overflow:hidden;padding:13px 0;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  background:var(--bg);transition:background var(--tt);
+}
+.mq-t{display:flex;width:max-content;animation:mqs 24s linear infinite;}
+.mq-t:hover{animation-play-state:paused;}
+@keyframes mqs{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.mi{
+  display:flex;align-items:center;gap:24px;padding:0 24px;
+  font-family:'Space Mono',monospace;font-size:10px;
+  letter-spacing:.12em;color:var(--muted);text-transform:uppercase;white-space:nowrap;
+}
+.ms{color:var(--blue);}
+
+/* ══════════════════════════════════════
+   SECTIONS
+══════════════════════════════════════ */
+.sec{padding:112px 72px;max-width:1280px;margin:0 auto;}
+.sdiv{height:1px;background:var(--border);}
+
+.slabel{
+  font-family:'Space Mono',monospace;font-size:9px;
+  letter-spacing:.25em;color:var(--blue);text-transform:uppercase;
+  margin-bottom:64px;display:flex;align-items:center;gap:18px;
+}
+.slabel::after{content:'';flex:1;max-width:60px;height:1px;background:var(--border);}
+.sh2{font-size:clamp(36px,5vw,68px);font-weight:700;letter-spacing:-.04em;line-height:.97;margin-bottom:72px;}
+.sh2 em{font-style:italic;font-weight:300;color:var(--muted);}
+.rv{opacity:0;transform:translateY(40px);}
+
+/* ── BACKGROUND ── */
+.bgsplit{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:start;}
+.lead{font-size:clamp(17px,1.9vw,24px);line-height:1.58;font-weight:300;}
+.body{font-size:14px;color:var(--muted);line-height:1.85;}
+.body p+p{margin-top:16px;}
+.quad{
+  display:grid;grid-template-columns:1fr 1fr;margin-top:72px;
+  border:1px solid var(--border);
+}
+.qi{
+  padding:36px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);
+  transition:background .3s;
+}
+.qi:nth-child(2n){border-right:none;}
+.qi:nth-child(3),.qi:nth-child(4){border-bottom:none;}
+.qi:hover{background:var(--surface);}
+.qn{font-family:'Space Mono',monospace;font-size:9px;color:var(--blue);letter-spacing:.2em;margin-bottom:14px;}
+.qt{font-size:15px;font-weight:600;margin-bottom:8px;}
+.qb{font-size:13px;color:var(--muted);line-height:1.7;}
+
+/* ── TIMELINE ── */
+.tl{padding-left:36px;border-left:1px solid var(--border);margin-top:72px;}
+.tli{position:relative;padding-bottom:60px;}
+.tli:last-child{padding-bottom:0;}
+.tld{
+  position:absolute;left:-42px;top:5px;
+  width:12px;height:12px;border-radius:50%;
+  border:2px solid var(--blue);background:var(--bg);
+  transition:background .3s,transform .3s;
+}
+.tli:hover .tld{background:var(--blue);transform:scale(1.3);}
+.tlm{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.1em;margin-bottom:7px;}
+.tlc{font-size:20px;font-weight:700;letter-spacing:-.02em;margin-bottom:4px;}
+.tlr{font-family:'Space Mono',monospace;font-size:9px;color:var(--blue);letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px;}
+.tld2{font-size:13px;color:var(--muted);line-height:1.78;max-width:580px;}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;}
+.tag{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.06em;padding:4px 11px;border:1px solid var(--border);color:var(--muted);}
+
+/* ── PROJECTS ── */
+.pgrid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1px;background:var(--border);border:1px solid var(--border);margin-top:72px;
+}
+.pc{
+  background:var(--bg);padding:32px 28px;display:flex;flex-direction:column;min-height:300px;
+  position:relative;overflow:hidden;transition:background .3s;transform-style:preserve-3d;
+}
+.pc::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--cc,var(--blue));transform:scaleX(0);transform-origin:left;
+  transition:transform .48s cubic-bezier(.77,0,.18,1);
+}
+.pc:hover{background:var(--surface);}
+.pc:hover::before{transform:scaleX(1);}
+.pn{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.18em;margin-bottom:20px;}
+.pico{font-size:26px;margin-bottom:14px;}
+.ptit{font-size:16px;font-weight:600;margin-bottom:8px;}
+.pd{font-size:12px;color:var(--muted);line-height:1.7;flex:1;}
+.pst{display:flex;flex-wrap:wrap;gap:5px;margin-top:18px;}
+.pst span{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.05em;color:var(--muted);border:1px solid var(--border);padding:3px 9px;}
+
+/* ── HACKATHONS ── */
+.sr{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:64px;
+}
+.st{background:var(--bg);padding:36px 26px;transition:background .3s;}
+.st:hover{background:var(--surface);}
+.sn{font-size:52px;font-weight:700;letter-spacing:-.05em;line-height:1;margin-bottom:6px;}
+.sl{font-family:'Space Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;}
+.hgrid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:1px;background:var(--border);border:1px solid var(--border);
+}
+.hi{background:var(--bg);padding:26px;transition:background .3s;}
+.hi:hover{background:var(--surface);}
+.hp{font-family:'Space Mono',monospace;font-size:8px;color:var(--green);letter-spacing:.1em;margin-bottom:7px;}
+.hi h4{font-size:13px;font-weight:600;margin-bottom:4px;}
+.hm{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);line-height:1.8;}
+.hs{font-size:11px;color:var(--blue);margin-top:7px;font-family:'Space Mono',monospace;}
+
+/* ── TOOLKIT ── */
+.tkg{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  border:1px solid var(--border);
+}
+.tgr{padding:32px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
+.tgr:nth-child(3n){border-right:none;}
+.tgr:nth-last-child(-n+3){border-bottom:none;}
+.tgh{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);margin-bottom:18px;}
+.tgl{list-style:none;}
+.tgl li{font-size:12px;color:var(--muted);padding:6px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;transition:color .2s;}
+.tgl li:last-child{border-bottom:none;}
+.tgl li:hover{color:var(--text);}
+.tkd{width:4px;height:4px;border-radius:50%;background:var(--blue);flex-shrink:0;}
+
+/* ── CONTACT ── */
+.csplit{display:grid;grid-template-columns:1fr 1fr;gap:72px;}
+.cbig{font-size:clamp(36px,5vw,68px);font-weight:700;letter-spacing:-.04em;line-height:.94;margin-bottom:36px;}
+.cbig .acc{color:var(--blue);}
+.av{display:inline-flex;align-items:center;gap:10px;border:1px solid var(--green);padding:12px 20px;margin-bottom:32px;font-family:'Space Mono',monospace;font-size:9px;color:var(--green);letter-spacing:.1em;}
+.avd{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(1.6)}}
+.bigbtn{
+  display:inline-flex;align-items:center;gap:14px;
+  padding:17px 34px;background:var(--blue);color:#000;
+  font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;
+  text-decoration:none;position:relative;overflow:hidden;transition:color .4s;
+}
+.bigbtn::before{content:'';position:absolute;inset:0;background:#000;transform:translateY(101%);transition:transform .4s cubic-bezier(.77,0,.18,1);}
+.bigbtn:hover::before{transform:translateY(0);}
+.bigbtn:hover{color:#fff;}
+.bigbtn span{position:relative;z-index:1;}
+.clinks{list-style:none;}
+.clinks li{border-bottom:1px solid var(--border);}
+.clinks a{display:flex;justify-content:space-between;align-items:center;padding:18px 0;text-decoration:none;color:var(--text);font-size:13px;transition:color .3s;}
+.clinks a:hover{color:var(--blue);}
+.ca{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);}
+
+/* footer */
+footer{border-top:1px solid var(--border);padding:26px 72px;display:flex;justify-content:space-between;align-items:center;}
+footer p{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.1em;}
+
+/* ══════════════════════════════════════
+   MOBILE RESPONSIVE
+══════════════════════════════════════ */
+@media(max-width:900px){
+  /* HERO */
+  #hero{
+    grid-template-columns:1fr;
+    grid-template-rows:56vw auto;
+    height:auto;min-height:100svh;
+  }
+  .hero-vis{min-height:56vw;}
+  .hero-vis .photo-grade::after{
+    background:linear-gradient(180deg,transparent 60%,var(--bg) 100%);
+  }
+  .hero-right{
+    padding:28px 24px 36px;
+    min-height:auto;
+  }
+  .h-nav{margin-bottom:0;}
+  .h-links{display:none;}
+  .hamburger{display:flex;}
+  h1.hh1{font-size:clamp(38px,9vw,64px);}
+  .h-desc{max-width:100%;}
+  .h-foot{flex-direction:row;}
+}
+@media(max-width:600px){
+  #hero{grid-template-rows:60vw auto;}
+  .hero-vis{min-height:60vw;}
+  h1.hh1{font-size:clamp(34px,10vw,56px);}
+  .sec{padding:72px 22px;}
+  .bgsplit{grid-template-columns:1fr;gap:36px;}
+  .quad{grid-template-columns:1fr;}
+  .qi:nth-child(2n){border-right:1px solid var(--border);}
+  .qi:nth-child(3){border-bottom:1px solid var(--border);}
+  .qi:nth-child(4){border-bottom:none;}
+  .qi:nth-child(odd){border-right:none;}
+  .tl{padding-left:24px;}
+  .tld{left:-30px;}
+  .pgrid{grid-template-columns:1fr;}
+  .sr{grid-template-columns:1fr 1fr;}
+  .hgrid{grid-template-columns:1fr;}
+  .tkg{grid-template-columns:1fr;}
+  .tgr:nth-child(3n){border-right:1px solid var(--border);}
+  .tgr:nth-last-child(-n+3){border-bottom:1px solid var(--border);}
+  .tgr{border-right:1px solid var(--border);}
+  .tgr:last-child{border-bottom:none;border-right:1px solid var(--border);}
+  .csplit{grid-template-columns:1fr;gap:40px;}
+  footer{flex-direction:column;gap:10px;text-align:center;padding:22px;}
+  .sh2{font-size:clamp(32px,8vw,52px);}
+  #thm{top:16px;right:16px;padding:7px 12px;font-size:8px;}
+}
+</style>
+</head>
+<body>
+
+<div id="grain"></div>
+<div id="cur-ring"></div>
+<div id="cur-dot"></div>
+
+<!-- Mobile nav overlay -->
+<div class="mobile-nav" id="mob-nav">
+  <button class="m-close" onclick="closeMobNav()">✕</button>
+  <a href="#background" onclick="closeMobNav()">Work</a>
+  <a href="#projects" onclick="closeMobNav()">Projects</a>
+  <a href="#hackathons" onclick="closeMobNav()">Hackathons</a>
+  <a href="#toolkit" onclick="closeMobNav()">Toolkit</a>
+  <a href="#contact" onclick="closeMobNav()">Contact</a>
+</div>
+
+<!-- ══════════════════════════════════════ HERO ══════════════════════════════════════ -->
+<section id="hero">
+
+  <!-- LEFT: Visual -->
+  <div class="hero-vis">
+    <!-- Particle canvas (background / fallback) -->
+    <canvas id="pcv"></canvas>
+
+    <!-- YOUR PHOTO — drop photo.jpg in the portfolio folder -->
+    <!-- CSS enhancement: contrast boost, cinematic desaturate, brand tint overlay -->
+    <img class="hero-photo" src="photo.jpg" alt="Zain Khan"
+         onerror="this.style.display='none'" />
+
+    <!-- Cinematic grade overlays -->
+    <div class="photo-grade"></div>
+    <div class="photo-tint"></div>
+
+    <!-- Day/Night -->
+    <button id="thm" onclick="toggleTheme()">
+      <div class="thm-ic">
+        <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="sun"  width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4"/>
+          <line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/>
+          <line x1="4.93" y1="4.93" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/>
+          <line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/>
+          <line x1="4.93" y1="19.07" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"/>
+        </svg>
+      </div>
+      <span>DAY / NIGHT</span>
+    </button>
+    <div class="vis-label">Khanstruct — 2026</div>
+  </div>
+
+  <!-- RIGHT: Content -->
+  <div class="hero-right">
+    <nav class="h-nav">
+      <span class="h-logo">ZK</span>
+      <ul class="h-links">
+        <li><a href="#background">Work</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#hackathons">Hackathons</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+      <button class="hamburger" onclick="openMobNav()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+
+    <div class="h-text">
+      <p class="h-tag">Founder · AI Engineer · Community Organizer</p>
+      <h1 class="hh1">
+        <span class="hl"><span>Building</span></span>
+        <span class="hl"><span><em>intelligent</em></span></span>
+        <span class="hl"><span>systems.</span></span>
+      </h1>
+      <p class="h-desc">Founder of Khanstruct — an AI-first studio shipping multimodal agents, automation pipelines, and knowledge infrastructure. Tulsa, Oklahoma.</p>
+      <div class="h-ctas">
+        <a href="#projects" class="btn mag"><span>View Projects ↗</span></a>
+        <a href="mailto:zain@thekhanstruct.com" class="btn btn-ghost mag"><span>Get in Touch</span></a>
+      </div>
+    </div>
+
+    <div class="h-foot">
+      <div>
+        <p>Tulsa, Oklahoma</p>
+        <p>Available 2026</p>
+      </div>
+      <div class="scroll-hint">
+        <div class="s-dot"></div><div class="s-line"></div><span>Scroll</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div id="mq">
+  <div class="mq-t">
+    <span class="mi">Gemini Live API<span class="ms">✦</span></span>
+    <span class="mi">React / TypeScript<span class="ms">✦</span></span>
+    <span class="mi">Google Cloud Run<span class="ms">✦</span></span>
+    <span class="mi">Vertex AI<span class="ms">✦</span></span>
+    <span class="mi">Python<span class="ms">✦</span></span>
+    <span class="mi">Vector Search<span class="ms">✦</span></span>
+    <span class="mi">Knowledge Graphs<span class="ms">✦</span></span>
+    <span class="mi">NASA Space Apps<span class="ms">✦</span></span>
+    <span class="mi">GDG Tulsa<span class="ms">✦</span></span>
+    <span class="mi">Devpost Level 6<span class="ms">✦</span></span>
+    <span class="mi">16 Hackathons<span class="ms">✦</span></span>
+    <span class="mi">Gemini Live API<span class="ms">✦</span></span>
+    <span class="mi">React / TypeScript<span class="ms">✦</span></span>
+    <span class="mi">Google Cloud Run<span class="ms">✦</span></span>
+    <span class="mi">Vertex AI<span class="ms">✦</span></span>
+    <span class="mi">Python<span class="ms">✦</span></span>
+    <span class="mi">Vector Search<span class="ms">✦</span></span>
+    <span class="mi">Knowledge Graphs<span class="ms">✦</span></span>
+    <span class="mi">NASA Space Apps<span class="ms">✦</span></span>
+    <span class="mi">GDG Tulsa<span class="ms">✦</span></span>
+    <span class="mi">Devpost Level 6<span class="ms">✦</span></span>
+    <span class="mi">16 Hackathons<span class="ms">✦</span></span>
+  </div>
+</div>
+<div class="sdiv"></div>
+
+<!-- BACKGROUND -->
+<section class="sec" id="background">
+  <p class="slabel rv">01 — Background</p>
+  <div class="bgsplit">
+    <div><h2 class="sh2 rv">Builder.<br><em>Evidence-first.</em><br>Always shipped.</h2></div>
+    <div class="body rv">
+      <p>I build under the studio identity <strong>Khanstruct</strong> — multimodal AI agents, automation pipelines, and structured knowledge systems. Real production deployments, not mockups.</p>
+      <p>I think in hierarchies. Every system grounded in verifiable inputs, explicit source boundaries, and repeatable outputs. If you can't point to the source, it's not real.</p>
+      <p>16 hackathons. 205 GitHub repos. Devpost Level 6. Google Developer Program since 2022. GDG Tulsa organizer. NASA Space Apps local lead.</p>
+    </div>
+  </div>
+  <div class="quad rv">
+    <div class="qi"><div class="qn">01</div><div class="qt">Evidence before narrative</div><div class="qb">Every layer grounded in verifiable inputs with explicit source boundaries. No drift.</div></div>
+    <div class="qi"><div class="qn">02</div><div class="qt">Ship, then iterate</div><div class="qb">A deployed agent doing one thing correctly beats a prototype doing everything in theory.</div></div>
+    <div class="qi"><div class="qn">03</div><div class="qt">Hierarchies clarify everything</div><div class="qb">Good architecture is a taxonomy. The right structure makes every failure diagnosable.</div></div>
+    <div class="qi"><div class="qn">04</div><div class="qt">Community is infrastructure</div><div class="qb">Running GDG Tulsa and NASA Space Apps isn't separate from engineering — it's how the ecosystem stays productive.</div></div>
+  </div>
+</section>
+<div class="sdiv"></div>
+
+<!-- EXPERIENCE -->
+<section class="sec" id="experience">
+  <p class="slabel rv">02 — Experience</p>
+  <h2 class="sh2 rv">Where I've<br><em>built things.</em></h2>
+  <div class="tl rv">
+    <div class="tli"><div class="tld"></div>
+      <div class="tlm">2026 – Present · Tulsa, OK</div>
+      <div class="tlc scr">Khanstruct</div>
+      <div class="tlr">Founder & AI Engineer</div>
+      <div class="tld2">Independent AI studio. Built Cortana — multimodal AI agent with real-time voice, vision, and UI navigation using Gemini Live API. Submitted to Gemini API Developer Competition. Designed personal Second Brain at scale.</div>
+      <div class="tags"><span class="tag">Gemini Live API</span><span class="tag">React</span><span class="tag">TypeScript</span><span class="tag">Cloud Run</span><span class="tag">Python</span></div>
+    </div>
+    <div class="tli"><div class="tld"></div>
+      <div class="tlm">2024 – 2025 · Tulsa, OK</div>
+      <div class="tlc scr">R-Cubed Consulting</div>
+      <div class="tlr">Business Development, Marketing & Ops</div>
+      <div class="tld2">Oracle and NetSuite consulting firm. Owned full sales pipeline, company website, and marketing operations. Authored the BDR Outbound Handbook. Completed NetSuite SuiteLife Partner Training.</div>
+      <div class="tags"><span class="tag">HubSpot</span><span class="tag">Apollo</span><span class="tag">WordPress</span><span class="tag">Oracle</span><span class="tag">NetSuite</span></div>
+    </div>
+    <div class="tli"><div class="tld"></div>
+      <div class="tlm">2024 – 2025 · Tulsa, OK</div>
+      <div class="tlc scr">Trulo Homes / Red River Dev</div>
+      <div class="tlr">Marketing Director</div>
+      <div class="tld2">Multi-location real estate marketing across 8 markets. Full Google + Meta stack. Earned Google Ads Display Certification. 26+ Business Profile events in a single quarter.</div>
+      <div class="tags"><span class="tag">Google Ads</span><span class="tag">Meta Ads</span><span class="tag">Analytics</span><span class="tag">Looker Studio</span></div>
+    </div>
+    <div class="tli"><div class="tld"></div>
+      <div class="tlm">2024 – 2025 · Tulsa, OK</div>
+      <div class="tlc scr">Rose Rock Development</div>
+      <div class="tlr">Marketing & Client Operations</div>
+      <div class="tld2">Supported marketing across Reunion Building, Palace, Adams, and Vandever properties. Meta Business Suite, web development, calendar management.</div>
+      <div class="tags"><span class="tag">Meta Business</span><span class="tag">Canva</span><span class="tag">Google Workspace</span></div>
+    </div>
+  </div>
+</section>
+<div class="sdiv"></div>
+
+<!-- PROJECTS -->
+<section class="sec" id="projects">
+  <p class="slabel rv">03 — Projects</p>
+  <h2 class="sh2 rv">Real<br><em>deliverables.</em></h2>
+  <div class="pgrid rv">
+    <div class="pc" style="--cc:var(--blue)"><div class="pn">01 / AI Agent</div><div class="pico">🤖</div><div class="ptit">Cortana</div><div class="pd">Multimodal AI agent — real-time voice, vision, cinematic visuals, and UI navigation in one conversation. Submitted to Gemini API Developer Competition ($80K prize pool, 11,915 participants).</div><div class="pst"><span>Gemini Live API</span><span>React</span><span>TypeScript</span><span>Cloud Run</span></div></div>
+    <div class="pc" style="--cc:var(--purple)"><div class="pn">02 / Knowledge</div><div class="pico">🧠</div><div class="ptit">Blueprint</div><div class="pd">Personal operating system — 14 domain databases, evidence maps, normalization rules. The system behind all Khanstruct work.</div><div class="pst"><span>Notion</span><span>Claude API</span><span>Vector Search</span><span>Knowledge Graphs</span></div></div>
+    <div class="pc" style="--cc:var(--green)"><div class="pn">03 / Multi-Agent</div><div class="pico">⚡</div><div class="ptit">Gemini Marketing Taskforce</div><div class="pd">Autonomous multi-agent system automating marketing content creation — strategy to final copy. Built on Google Cloud ADK ($50K prize pool).</div><div class="pst"><span>Google ADK</span><span>Gemini</span><span>Cloud Run</span><span>Python</span></div></div>
+    <div class="pc" style="--cc:var(--orange)"><div class="pn">04 / Space Tech</div><div class="pico">🚀</div><div class="ptit">NASA Space Apps</div><div class="pd">Local lead organizer. Built V2 + V3 of the Space Apps website. Coordinated teams, mentors, and Houston judging operations across multiple years.</div><div class="pst"><span>React</span><span>GitHub</span><span>Program Ops</span></div></div>
+    <div class="pc" style="--cc:var(--gold)"><div class="pn">05 / Data</div><div class="pico">📊</div><div class="ptit">Health EHR Dashboard</div><div class="pd">70+ lab test dashboard with trend analysis, filtering, CSV export. Git-backed with GitHub Pages documentation. Built for longitudinal personal health data tracking.</div><div class="pst"><span>React</span><span>Python</span><span>CSV Pipelines</span></div></div>
+    <div class="pc" style="--cc:var(--cyan)"><div class="pn">06 / Geospatial</div><div class="pico">🗺️</div><div class="ptit">Cortana MapLens</div><div class="pd">Visual memory map turning location history into a clustered, exportable geospatial timeline with AI-driven insights. Submitted to Google Maps Platform Awards.</div><div class="pst"><span>Google Maps API</span><span>React</span><span>Gemini</span></div></div>
+  </div>
+</section>
+<div class="sdiv"></div>
+
+<!-- HACKATHONS -->
+<section class="sec" id="hackathons">
+  <p class="slabel rv">04 — Competitive Record</p>
+  <h2 class="sh2 rv">Devpost<br><em>Level 6.</em></h2>
+  <div class="sr rv">
+    <div class="st"><div class="sn cnt" data-t="16">0</div><div class="sl">Hackathons</div></div>
+    <div class="st"><div class="sn cnt" data-t="8">0</div><div class="sl">Shipped Projects</div></div>
+    <div class="st"><div class="sn cnt" data-t="205">0</div><div class="sl">GitHub Repos</div></div>
+    <div class="st"><div class="sn">$3M+</div><div class="sl">Prize Pools</div></div>
+  </div>
+  <div class="hgrid rv">
+    <div class="hi"><div class="hp">$80K · 11,915 PARTICIPANTS</div><h4>Gemini Live Agent Challenge</h4><div class="hm">Google · 2026</div><div class="hs">↳ Cortana — Multimodal AI Agent</div></div>
+    <div class="hi"><div class="hp">$100K · 35,628 PARTICIPANTS</div><h4>Gemini 3 Hackathon</h4><div class="hm">Google · Largest Gemini hackathon · 2026</div><div class="hs">↳ Submitted project entry</div></div>
+    <div class="hi"><div class="hp">$50K · 10,376 PARTICIPANTS</div><h4>Agent Dev Kit Hackathon</h4><div class="hm">Google Cloud · 2025</div><div class="hs">↳ Gemini Marketing Taskforce</div></div>
+    <div class="hi"><div class="hp">$1M+ · 128,453 PARTICIPANTS</div><h4>World's Largest Hackathon</h4><div class="hm">Bolt · 2025</div><div class="hs">↳ Submitted entry</div></div>
+    <div class="hi"><div class="hp">$1M · 1,407 PARTICIPANTS</div><h4>Meta Horizon Creator Competition</h4><div class="hm">Meta · 2025</div><div class="hs">↳ The Spartan Covenant</div></div>
+    <div class="hi"><div class="hp">$35K · 4,367 PARTICIPANTS</div><h4>Perplexity Hackathon</h4><div class="hm">Perplexity · 2025</div><div class="hs">↳ Cortona OS</div></div>
+    <div class="hi"><div class="hp">3,932 PARTICIPANTS</div><h4>Google Maps Platform Awards</h4><div class="hm">Google · 2025</div><div class="hs">↳ Cortana MapLens</div></div>
+    <div class="hi"><div class="hp">IN-PERSON · HOUSTON · 70 PARTICIPANTS</div><h4>Houston Hackathon 2025</h4><div class="hm">Impact Hub Houston · First in-person</div><div class="hs">↳ Open data for Houston</div></div>
+  </div>
+</section>
+<div class="sdiv"></div>
+
+<!-- TOOLKIT -->
+<section class="sec" id="toolkit">
+  <p class="slabel rv">05 — Toolkit</p>
+  <h2 class="sh2 rv">How I<br><em>build.</em></h2>
+  <div class="tkg rv">
+    <div class="tgr"><div class="tgh">AI & ML</div><ul class="tgl"><li><span class="tkd"></span>Gemini Live API</li><li><span class="tkd"></span>Google AI Studio / Vertex AI</li><li><span class="tkd"></span>LangChain / Vector Search</li><li><span class="tkd"></span>Knowledge Graphs</li><li><span class="tkd"></span>Claude API / ChatGPT</li></ul></div>
+    <div class="tgr"><div class="tgh">Languages & Frameworks</div><ul class="tgl"><li><span class="tkd"></span>TypeScript / JavaScript</li><li><span class="tkd"></span>Python</li><li><span class="tkd"></span>React / Next.js / Vite</li><li><span class="tkd"></span>Lit / WebGPU</li></ul></div>
+    <div class="tgr"><div class="tgh">Cloud & DevOps</div><ul class="tgl"><li><span class="tkd"></span>Google Cloud Run + Storage</li><li><span class="tkd"></span>Docker / GitHub Actions</li><li><span class="tkd"></span>Vercel / Heroku / Vultr</li><li><span class="tkd"></span>GCP Console</li></ul></div>
+    <div class="tgr"><div class="tgh">Data & Analytics</div><ul class="tgl"><li><span class="tkd"></span>Google Analytics / GTM</li><li><span class="tkd"></span>Looker Studio</li><li><span class="tkd"></span>Supabase / PostgreSQL</li><li><span class="tkd"></span>AppSheet / Sheets Automation</li></ul></div>
+    <div class="tgr"><div class="tgh">Marketing Stack</div><ul class="tgl"><li><span class="tkd"></span>HubSpot / Apollo / ZoomInfo</li><li><span class="tkd"></span>Google Ads / Facebook Ads</li><li><span class="tkd"></span>Search Console / Semrush</li><li><span class="tkd"></span>Meta Business Suite</li></ul></div>
+    <div class="tgr"><div class="tgh">Design & Media</div><ul class="tgl"><li><span class="tkd"></span>Figma / Canva</li><li><span class="tkd"></span>ElevenLabs / Runway ML</li><li><span class="tkd"></span>Synthesia / CapCut</li><li><span class="tkd"></span>Notion (knowledge systems)</li></ul></div>
+  </div>
+</section>
+<div class="sdiv"></div>
+
+<!-- CONTACT -->
+<section class="sec" id="contact">
+  <p class="slabel rv">06 — Contact</p>
+  <div class="csplit">
+    <div>
+      <div class="av rv"><div class="avd"></div>Available — 2026</div>
+      <div class="cbig rv">Let's build<br>something<br><span class="acc">real.</span></div>
+      <a href="mailto:zain@thekhanstruct.com" class="bigbtn rv mag"><span>zain@thekhanstruct.com</span><span>↗</span></a>
+    </div>
+    <ul class="clinks rv">
+      <li><a href="https://github.com/zainkhan1994" target="_blank"><span>GitHub</span><span class="ca">zainkhan1994 · 205 repos →</span></a></li>
+      <li><a href="http://g.dev/khanstruct" target="_blank"><span>Google Dev Profile</span><span class="ca">g.dev/khanstruct →</span></a></li>
+      <li><a href="https://devpost.com/zainkhan1994-zk" target="_blank"><span>Devpost</span><span class="ca">Level 6 · 16 Hackathons →</span></a></li>
+      <li><a href="https://www.kaggle.com/zainkhan1994zk" target="_blank"><span>Kaggle</span><span class="ca">zainkhan1994 →</span></a></li>
+      <li><a href="https://connect.com/zain.a.khan" target="_blank"><span>Connect.com</span><span class="ca">zain.a.khan →</span></a></li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 Zain Khan / Khanstruct</p>
+  <p>Tulsa, Oklahoma · Builder · AI Engineer · Community Organizer</p>
+</footer>
+
+<script>
+/* ── THEME ── */
+function toggleTheme(){
+  document.documentElement.dataset.theme =
+    document.documentElement.dataset.theme==='dark' ? 'light' : 'dark';
+}
+
+/* ── MOBILE NAV ── */
+function openMobNav(){
+  const nav = document.getElementById('mob-nav');
+  nav.classList.add('open');
+  gsap.to('.mobile-nav a',{opacity:1,y:0,duration:.5,stagger:.07,ease:'power3.out'});
+}
+function closeMobNav(){
+  document.getElementById('mob-nav').classList.remove('open');
+  gsap.set('.mobile-nav a',{opacity:0,y:30});
+}
+
+/* ── CURSOR (desktop only) ── */
+if(window.matchMedia('(pointer:fine)').matches){
+  const ring=document.getElementById('cur-ring'), dot=document.getElementById('cur-dot');
+  let cx=0,cy=0,tx=0,ty=0;
+  document.addEventListener('mousemove',e=>{
+    tx=e.clientX;ty=e.clientY;
+    dot.style.left=tx+'px';dot.style.top=ty+'px';
+  });
+  (function loop(){cx+=(tx-cx)*.1;cy+=(ty-cy)*.1;ring.style.left=cx+'px';ring.style.top=cy+'px';requestAnimationFrame(loop);})();
+  document.querySelectorAll('a,button,.pc,.qi,.hi,.st').forEach(el=>{
+    el.addEventListener('mouseenter',()=>document.body.classList.add('ch'));
+    el.addEventListener('mouseleave',()=>document.body.classList.remove('ch'));
+  });
+  document.getElementById('thm').addEventListener('mouseenter',()=>document.body.classList.add('ct'));
+  document.getElementById('thm').addEventListener('mouseleave',()=>document.body.classList.remove('ct'));
+}
+
+/* ── PARTICLE CANVAS ── */
+(function(){
+  const cv=document.getElementById('pcv');
+  const ctx=cv.getContext('2d');
+  let W=0,H=0,mouse={x:-9999,y:-9999};
+
+  function resize(){
+    const p=cv.parentElement;
+    W=cv.width=p.offsetWidth||800;
+    H=cv.height=p.offsetHeight||600;
+  }
+  new ResizeObserver(resize).observe(cv.parentElement);
+  setTimeout(resize,20);
+
+  cv.parentElement.addEventListener('mousemove',e=>{
+    const r=cv.getBoundingClientRect();
+    mouse.x=(e.clientX-r.left)/W;
+    mouse.y=(e.clientY-r.top)/H;
+  });
+  cv.parentElement.addEventListener('mouseleave',()=>{mouse.x=-9;mouse.y=-9;});
+
+  const N=65, pts=[];
+  for(let i=0;i<N;i++) pts.push({
+    x:Math.random(),y:Math.random(),
+    vx:(Math.random()-.5)*.00025,vy:(Math.random()-.5)*.00025,
+    r:Math.random()*1.5+.5,h:Math.random()*60+200
+  });
+
+  let t=0;
+  function draw(){
+    t++;
+    ctx.clearRect(0,0,W,H);
+    // BG
+    const bg=ctx.createRadialGradient(W*.5,H*.42,0,W*.5,H*.5,Math.max(W,H)*.8);
+    bg.addColorStop(0,'rgba(14,16,50,1)');bg.addColorStop(.5,'rgba(8,8,24,1)');bg.addColorStop(1,'rgba(4,4,10,1)');
+    ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+    pts.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>1)p.vx*=-1;if(p.y<0||p.y>1)p.vy*=-1;
+      const dx=p.x-mouse.x,dy=p.y-mouse.y,d2=dx*dx+dy*dy;
+      if(d2<.02){p.vx+=dx*.00003;p.vy+=dy*.00003;}
+    });
+
+    for(let i=0;i<N;i++) for(let j=i+1;j<N;j++){
+      const a=pts[i],b=pts[j];
+      const dx=(a.x-b.x)*W,dy=(a.y-b.y)*H,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<120){
+        ctx.beginPath();ctx.moveTo(a.x*W,a.y*H);ctx.lineTo(b.x*W,b.y*H);
+        ctx.strokeStyle=`hsla(${(a.h+b.h)/2},75%,65%,${(1-d/120)*.22})`;
+        ctx.lineWidth=.7;ctx.stroke();
+      }
+    }
+    pts.forEach(p=>{
+      const x=p.x*W,y=p.y*H;
+      const g=ctx.createRadialGradient(x,y,0,x,y,p.r*4);
+      g.addColorStop(0,`hsla(${p.h},85%,72%,.85)`);g.addColorStop(1,`hsla(${p.h},80%,65%,0)`);
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,p.r*4,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=`hsla(${p.h},90%,88%,.9)`;ctx.beginPath();ctx.arc(x,y,p.r,0,Math.PI*2);ctx.fill();
+    });
+
+    const cx2=W*.5,cy2=H*.45,sp=Math.sin(t*.022)*.1+1;
+    const sun=ctx.createRadialGradient(cx2,cy2,0,cx2,cy2,100*sp);
+    sun.addColorStop(0,'rgba(80,160,255,.18)');sun.addColorStop(.4,'rgba(60,100,240,.06)');sun.addColorStop(1,'rgba(40,60,200,0)');
+    ctx.fillStyle=sun;ctx.beginPath();ctx.arc(cx2,cy2,100*sp,0,Math.PI*2);ctx.fill();
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ── GSAP ── */
+gsap.registerPlugin(ScrollTrigger);
+
+// Hero entrance
+gsap.timeline({defaults:{ease:'power4.out'}})
+  .to('.h-tag',  {opacity:1,y:0,duration:.9,delay:.5})
+  .to('.hl span',{y:'0%',duration:1.1,stagger:.12},'-=.6')
+  .to('.h-desc', {opacity:1,y:0,duration:.8},'-=.5')
+  .to('.h-ctas', {opacity:1,y:0,duration:.7},'-=.4')
+  .to('.h-foot', {opacity:1,duration:.6},'-=.35');
+
+// Intersection observer reveals
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      gsap.to(e.target,{opacity:1,y:0,duration:1,ease:'power3.out'});
+      io.unobserve(e.target);
+    }
+  });
+},{threshold:.1});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+
+// Counters
+const cio=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const el=e.target,t=parseInt(el.dataset.t),o={v:0};
+      gsap.to(o,{v:t,duration:2.2,ease:'power2.out',onUpdate(){el.textContent=Math.round(o.v);}});
+      cio.unobserve(el);
+    }
+  });
+},{threshold:.5});
+document.querySelectorAll('.cnt').forEach(el=>cio.observe(el));
+
+// 3D card tilt
+document.querySelectorAll('.pc').forEach(c=>{
+  c.addEventListener('mousemove',e=>{
+    const r=c.getBoundingClientRect();
+    gsap.to(c,{rotateY:(e.clientX-r.left)/r.width-.5)*15,
+              rotateX:-((e.clientY-r.top)/r.height-.5)*11,
+              duration:.35,ease:'power2.out',transformPerspective:850});
+  });
+  c.addEventListener('mouseleave',()=>gsap.to(c,{rotateY:0,rotateX:0,duration:.7,ease:'elastic.out(1,.6)'}));
+});
+
+// Magnetic buttons
+document.querySelectorAll('.mag').forEach(b=>{
+  b.addEventListener('mousemove',e=>{
+    const r=b.getBoundingClientRect();
+    gsap.to(b,{x:(e.clientX-r.left-r.width/2)*.28,y:(e.clientY-r.top-r.height/2)*.28,duration:.4,ease:'power2.out'});
+  });
+  b.addEventListener('mouseleave',()=>gsap.to(b,{x:0,y:0,duration:.8,ease:'elastic.out(1,.5)'}));
+});
+
+// Scramble effect on timeline company names
+const CHARS='!<>—_/[]{}=+*?#ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+document.querySelectorAll('.scr').forEach(el=>{
+  const orig=el.textContent;let req;
+  el.closest('.tli').addEventListener('mouseenter',()=>{
+    cancelAnimationFrame(req);let f=0;
+    (function go(){
+      el.textContent=orig.split('').map((c,i)=>f>i*1.8?c:(c===' '?' ':CHARS[Math.floor(Math.random()*CHARS.length)])).join('');
+      if(f++<orig.length*2)req=requestAnimationFrame(go);else el.textContent=orig;
+    })();
+  });
+});
+</script>
+</body>
+</html>

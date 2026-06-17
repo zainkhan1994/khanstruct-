@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Zain Khan — Builder & AI Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Editorial+New:ital,wght@0,400;1,400&family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.4/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.4/ScrollTrigger.min.js"></script>
+<style>
+/* ── THEME ── */
+:root {
+  --bg: #07070a;
+  --surface: #0e0e14;
+  --text: #eeeceb;
+  --muted: #5a5a6a;
+  --dim: #353545;
+  --border: rgba(255,255,255,0.065);
+  --blue: #4a9eff;
+  --purple: #a855f7;
+  --green: #22c55e;
+  --vis-bg: #060610;
+  --vis-overlay: rgba(6,6,16,0.38);
+  --transition-speed: 0.7s;
+}
+[data-theme="light"] {
+  --bg: #f0ede8;
+  --surface: #e8e4de;
+  --text: #111118;
+  --muted: #777;
+  --dim: #bbb;
+  --border: rgba(0,0,0,0.08);
+  --vis-bg: #0d0d20;
+  --vis-overlay: rgba(6,6,16,0.22);
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+html { overflow-x:hidden; }
+body {
+  font-family:'Space Grotesk',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  cursor:none;
+  overflow-x:hidden;
+  transition: background var(--transition-speed), color var(--transition-speed);
+}
+
+/* ── GRAIN ── */
+#grain {
+  pointer-events:none; position:fixed; inset:0; z-index:9998;
+  opacity:.028;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:220px; mix-blend-mode:overlay;
+}
+
+/* ── CURSOR ── */
+#c-ring {
+  position:fixed; width:38px; height:38px;
+  border: 1.5px solid rgba(74,158,255,0.65);
+  border-radius:50%; pointer-events:none; z-index:9999;
+  top:0; left:0; transform:translate(-50%,-50%);
+  transition: width .25s, height .25s, opacity .25s, border-color .25s;
+  mix-blend-mode: difference;
+}
+#c-dot {
+  position:fixed; width:5px; height:5px;
+  background:var(--blue); border-radius:50%;
+  pointer-events:none; z-index:9999;
+  top:0; left:0; transform:translate(-50%,-50%);
+}
+body.cursor-hover #c-ring { width:68px; height:68px; border-color:rgba(255,255,255,0.4); }
+body.cursor-theme #c-ring { width:90px; height:90px; border-color:var(--blue); }
+
+/* ══════════════════════════════════════
+   HERO — SPLIT SCREEN
+══════════════════════════════════════ */
+#hero {
+  display: grid;
+  grid-template-columns: 58fr 42fr;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+/* LEFT — Visual */
+.hero-visual {
+  position: relative;
+  overflow: hidden;
+  background: var(--vis-bg);
+  /* THE ZOOM */
+  animation: heroReveal 3.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes heroReveal {
+  0%   { transform: scale(1.18); filter: brightness(0.5); }
+  100% { transform: scale(1.0);  filter: brightness(1); }
+}
+#particle-canvas {
+  width:100%; height:100%; display:block;
+  position:absolute; inset:0;
+}
+.vis-overlay {
+  position:absolute; inset:0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    var(--vis-overlay) 100%
+  );
+  pointer-events:none;
+}
+/* day/night toggle */
+#theme-btn {
+  position:absolute; top:28px; right:28px;
+  display:flex; align-items:center; gap:10px;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.14);
+  backdrop-filter:blur(12px);
+  padding:10px 18px; cursor:none;
+  font-family:'Space Mono',monospace;
+  font-size:10px; letter-spacing:.2em;
+  color:rgba(255,255,255,0.75);
+  text-transform:uppercase;
+  transition:all .3s;
+  z-index:10;
+}
+#theme-btn:hover { background:rgba(255,255,255,0.14); }
+.theme-icon {
+  width:22px; height:22px; position:relative; flex-shrink:0;
+}
+.theme-icon svg { position:absolute; top:0; left:0; transition:opacity .5s, transform .5s; }
+.sun-icon { opacity:0; transform:rotate(90deg) scale(0.6); }
+[data-theme="light"] .moon-icon { opacity:0; transform:rotate(-90deg) scale(0.6); }
+[data-theme="light"] .sun-icon  { opacity:1; transform:rotate(0deg) scale(1); }
+
+/* Section number overlay */
+.vis-num {
+  position:absolute; bottom:32px; left:36px;
+  font-family:'Space Mono',monospace;
+  font-size:11px; letter-spacing:.3em;
+  color:rgba(255,255,255,0.25); text-transform:uppercase;
+  z-index:10;
+}
+
+/* RIGHT — Content */
+.hero-right {
+  display:flex; flex-direction:column;
+  padding:32px 48px 36px 52px;
+  position:relative; overflow:hidden;
+  background:var(--bg);
+  transition: background var(--transition-speed);
+}
+/* Nav inside right column */
+.hero-nav {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:auto;
+}
+.nav-logo {
+  font-family:'Space Mono',monospace;
+  font-size:11px; letter-spacing:.2em; color:var(--muted);
+  text-transform:uppercase;
+}
+.nav-menu { display:flex; gap:28px; list-style:none; }
+.nav-menu a {
+  font-family:'Space Mono',monospace; font-size:9px;
+  letter-spacing:.15em; color:var(--muted); text-decoration:none;
+  text-transform:uppercase; transition:color .2s;
+}
+.nav-menu a:hover { color:var(--text); }
+
+/* Hero text */
+.hero-text {
+  flex:1; display:flex; flex-direction:column; justify-content:center;
+  padding:40px 0;
+}
+.hero-tag {
+  font-family:'Space Mono',monospace; font-size:10px;
+  letter-spacing:.25em; color:var(--blue); text-transform:uppercase;
+  margin-bottom:20px; opacity:0;
+  transform:translateY(20px);
+}
+.hero-h1 {
+  font-size:clamp(42px,5.5vw,76px);
+  font-weight:700; line-height:.95; letter-spacing:-.04em;
+  margin-bottom:28px;
+}
+.hero-h1 .line { overflow:hidden; display:block; }
+.hero-h1 .line span { display:block; transform:translateY(110%); }
+.hero-h1 em { font-style:italic; font-weight:300; color:var(--muted); }
+.hero-desc {
+  font-size:15px; color:var(--muted); line-height:1.75;
+  max-width:340px; margin-bottom:40px;
+  opacity:0; transform:translateY(20px);
+}
+.hero-ctas {
+  display:flex; gap:12px; flex-wrap:wrap;
+  opacity:0; transform:translateY(20px);
+}
+.btn {
+  display:inline-flex; align-items:center; gap:10px;
+  padding:13px 24px; text-decoration:none; cursor:none;
+  font-family:'Space Mono',monospace; font-size:10px;
+  letter-spacing:.12em; text-transform:uppercase;
+  border:1px solid var(--border); color:var(--text);
+  position:relative; overflow:hidden;
+  transition:border-color .3s, color .3s;
+}
+.btn::before {
+  content:''; position:absolute; inset:0;
+  background:var(--blue); transform:translateY(101%);
+  transition:transform .42s cubic-bezier(.77,0,.18,1);
+}
+.btn:hover { border-color:var(--blue); color:#000; }
+.btn:hover::before { transform:translateY(0); }
+.btn span { position:relative; z-index:1; }
+.btn-outline { background:transparent; }
+
+/* Hero footer */
+.hero-foot {
+  display:flex; justify-content:space-between; align-items:flex-end;
+  opacity:0;
+}
+.hero-foot-left p {
+  font-family:'Space Mono',monospace; font-size:10px;
+  letter-spacing:.15em; color:var(--muted); text-transform:uppercase;
+  line-height:1.9;
+}
+.scroll-cue {
+  display:flex; align-items:center; gap:12px;
+  font-family:'Space Mono',monospace; font-size:9px;
+  letter-spacing:.2em; color:var(--muted); text-transform:uppercase;
+}
+.scroll-line { width:40px; height:1px; background:var(--muted); }
+.scroll-dot {
+  width:5px; height:5px; border-radius:50%; background:var(--blue);
+  animation:scrollBounce 2s ease-in-out infinite;
+}
+@keyframes scrollBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+
+/* ══════════════════════════════════════
+   MARQUEE
+══════════════════════════════════════ */
+#marquee {
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  overflow:hidden; padding:14px 0;
+  background:var(--bg);
+  transition:background var(--transition-speed);
+}
+.marquee-inner {
+  display:flex; gap:0; width:max-content;
+  animation: marqueeScroll 28s linear infinite;
+}
+.marquee-inner:hover { animation-play-state:paused; }
+@keyframes marqueeScroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.m-item {
+  display:flex; align-items:center; gap:28px; padding:0 28px;
+  font-family:'Space Mono',monospace; font-size:11px;
+  letter-spacing:.12em; color:var(--muted); text-transform:uppercase;
+  white-space:nowrap;
+}
+.m-sep { color:var(--blue); }
+
+/* ══════════════════════════════════════
+   SECTIONS
+══════════════════════════════════════ */
+.section {
+  padding:120px 80px; max-width:1320px; margin:0 auto;
+}
+.section-divider { height:1px; background:var(--border); }
+
+.s-label {
+  font-family:'Space Mono',monospace; font-size:10px;
+  letter-spacing:.25em; color:var(--blue); text-transform:uppercase;
+  margin-bottom:72px; display:flex; align-items:center; gap:20px;
+}
+.s-label::after { content:''; flex:1; max-width:64px; height:1px; background:var(--border); }
+
+.s-h2 {
+  font-size:clamp(38px,5vw,68px);
+  font-weight:700; letter-spacing:-.04em; line-height:.98;
+  margin-bottom:80px;
+}
+.s-h2 em { font-style:italic; font-weight:300; color:var(--muted); }
+
+/* reveal */
+.rv { opacity:0; transform:translateY(44px); }
+
+/* ── BACKGROUND ── */
+.bg-split { display:grid; grid-template-columns:1fr 1fr; gap:80px; }
+.lead { font-size:clamp(18px,2vw,26px); line-height:1.55; color:var(--text); font-weight:300; }
+.body { font-size:14px; color:var(--muted); line-height:1.85; }
+.body p+p { margin-top:16px; }
+
+.quad {
+  display:grid; grid-template-columns:1fr 1fr;
+  margin-top:80px;
+  border:1px solid var(--border);
+}
+.quad-item {
+  padding:40px; border-right:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  transition:background .3s;
+}
+.quad-item:nth-child(2n) { border-right:none; }
+.quad-item:nth-child(3),.quad-item:nth-child(4) { border-bottom:none; }
+.quad-item:hover { background:var(--surface); }
+.q-num { font-family:'Space Mono',monospace; font-size:10px; color:var(--blue); letter-spacing:.2em; margin-bottom:16px; }
+.q-title { font-size:16px; font-weight:600; margin-bottom:8px; }
+.q-body { font-size:13px; color:var(--muted); line-height:1.7; }
+
+/* ── EXPERIENCE TIMELINE ── */
+.tl { padding-left:40px; border-left:1px solid var(--border); margin-top:80px; }
+.tl-item { position:relative; padding-bottom:64px; }
+.tl-item:last-child { padding-bottom:0; }
+.tl-dot {
+  position:absolute; left:-46px; top:4px;
+  width:13px; height:13px; border-radius:50%;
+  border:2px solid var(--blue); background:var(--bg);
+  transition:background .3s, transform .3s;
+}
+.tl-item:hover .tl-dot { background:var(--blue); transform:scale(1.3); }
+.tl-meta { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:.1em; margin-bottom:8px; }
+.tl-co { font-size:22px; font-weight:700; letter-spacing:-.02em; margin-bottom:4px; }
+.tl-role { font-family:'Space Mono',monospace; font-size:10px; color:var(--blue); letter-spacing:.15em; text-transform:uppercase; margin-bottom:16px; }
+.tl-desc { font-size:14px; color:var(--muted); line-height:1.75; max-width:600px; }
+.tl-tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:16px; }
+.tag {
+  font-family:'Space Mono',monospace; font-size:9px; letter-spacing:.06em;
+  padding:4px 12px; border:1px solid var(--border); color:var(--muted);
+  background:transparent;
+}
+
+/* ── PROJECTS GRID ── */
+.projects-grid {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:1px; background:var(--border); border:1px solid var(--border);
+  margin-top:80px;
+}
+.p-card {
+  background:var(--bg); padding:36px 32px;
+  display:flex; flex-direction:column;
+  position:relative; overflow:hidden;
+  min-height:320px;
+  cursor:none; transition:background .3s;
+  transform-style:preserve-3d;
+}
+.p-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:var(--card-c, var(--blue));
+  transform:scaleX(0); transform-origin:left;
+  transition:transform .5s cubic-bezier(.77,0,.18,1);
+}
+.p-card:hover { background:var(--surface); }
+.p-card:hover::before { transform:scaleX(1); }
+.p-n { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:.2em; margin-bottom:24px; }
+.p-ico { font-size:28px; margin-bottom:16px; }
+.p-title { font-size:17px; font-weight:600; margin-bottom:10px; letter-spacing:-.01em; }
+.p-desc { font-size:13px; color:var(--muted); line-height:1.7; flex:1; }
+.p-stack { display:flex; flex-wrap:wrap; gap:5px; margin-top:20px; }
+.p-stack span {
+  font-family:'Space Mono',monospace; font-size:9px; letter-spacing:.06em;
+  color:var(--muted); border:1px solid var(--border); padding:3px 10px;
+}
+
+/* ── HACKATHONS ── */
+.stats-row {
+  display:grid; grid-template-columns:repeat(4,1fr);
+  gap:1px; background:var(--border); border:1px solid var(--border);
+  margin-bottom:72px;
+}
+.stat { background:var(--bg); padding:40px 28px; transition:background .3s; }
+.stat:hover { background:var(--surface); }
+.stat-n {
+  font-size:56px; font-weight:700; letter-spacing:-.05em; line-height:1;
+  margin-bottom:6px; color:var(--text);
+}
+.stat-l { font-family:'Space Mono',monospace; font-size:9px; color:var(--muted); letter-spacing:.15em; text-transform:uppercase; }
+
+.hack-grid {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:1px; background:var(--border); border:1px solid var(--border);
+}
+.hack { background:var(--bg); padding:28px; transition:background .3s; }
+.hack:hover { background:var(--surface); }
+.hack-prize { font-family:'Space Mono',monospace; font-size:9px; color:var(--green); letter-spacing:.1em; margin-bottom:8px; }
+.hack h4 { font-size:14px; font-weight:600; margin-bottom:4px; }
+.hack-meta { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); line-height:1.8; }
+.hack-sub { font-size:12px; color:var(--blue); margin-top:8px; font-family:'Space Mono',monospace; }
+
+/* ── TOOLKIT ── */
+.tk-grid {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  border:1px solid var(--border);
+}
+.tk-group { padding:36px; border-right:1px solid var(--border); border-bottom:1px solid var(--border); }
+.tk-group:nth-child(3n) { border-right:none; }
+.tk-group:nth-last-child(-n+3) { border-bottom:none; }
+.tk-head {
+  font-family:'Space Mono',monospace; font-size:9px;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--blue);
+  margin-bottom:20px;
+}
+.tk-list { list-style:none; }
+.tk-list li {
+  font-size:13px; color:var(--muted); padding:6px 0;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:10px;
+  transition:color .2s;
+}
+.tk-list li:last-child { border-bottom:none; }
+.tk-list li:hover { color:var(--text); }
+.tk-dot { width:4px; height:4px; border-radius:50%; background:var(--blue); flex-shrink:0; }
+
+/* ── CONTACT ── */
+.contact-split { display:grid; grid-template-columns:1fr 1fr; gap:80px; }
+.contact-big {
+  font-size:clamp(40px,5.5vw,72px); font-weight:700;
+  letter-spacing:-.04em; line-height:.95; margin-bottom:40px;
+}
+.contact-big .accent { color:var(--blue); }
+.avail {
+  display:inline-flex; align-items:center; gap:10px;
+  border:1px solid var(--green); padding:13px 22px; margin-bottom:36px;
+  font-family:'Space Mono',monospace; font-size:10px; color:var(--green);
+  letter-spacing:.1em;
+}
+.avail-dot { width:7px; height:7px; border-radius:50%; background:var(--green); animation:pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(1.6)} }
+
+.big-btn {
+  display:inline-flex; align-items:center; gap:14px;
+  padding:18px 36px; background:var(--blue); color:#000;
+  font-family:'Space Mono',monospace; font-size:11px;
+  letter-spacing:.15em; text-transform:uppercase; font-weight:700;
+  text-decoration:none; cursor:none; position:relative; overflow:hidden;
+  transition:color .4s;
+}
+.big-btn::before {
+  content:''; position:absolute; inset:0; background:#000;
+  transform:translateY(101%); transition:transform .4s cubic-bezier(.77,0,.18,1);
+}
+.big-btn:hover::before { transform:translateY(0); }
+.big-btn:hover { color:#fff; }
+.big-btn span { position:relative; z-index:1; }
+
+.c-links { list-style:none; }
+.c-links li { border-bottom:1px solid var(--border); }
+.c-links a {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:20px 0; text-decoration:none; color:var(--text); font-size:14px;
+  transition:color .3s;
+}
+.c-links a:hover { color:var(--blue); }
+.c-arrow { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); }
+
+/* footer */
+footer {
+  border-top:1px solid var(--border); padding:28px 80px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+footer p { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:.1em; }
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px) {
+  #hero { grid-template-columns:1fr; grid-template-rows:50vh auto; }
+  .hero-right { padding:28px; }
+  .section { padding:80px 28px; }
+  .bg-split,.quad,.projects-grid,.stats-row,.hack-grid,.tk-grid,.contact-split { grid-template-columns:1fr; }
+  .stats-row { grid-template-columns:1fr 1fr; }
+  footer { flex-direction:column; gap:10px; }
+}
+</style>
+</head>
+<body>
+
+<div id="grain"></div>
+<div id="c-ring"></div>
+<div id="c-dot"></div>
+
+<!-- ══════════════════════════════════════
+     HERO
+══════════════════════════════════════ -->
+<section id="hero">
+
+  <!-- LEFT: Particle visual with zoom -->
+  <div class="hero-visual" id="hero-visual">
+    <canvas id="particle-canvas"></canvas>
+    <div class="vis-overlay"></div>
+    <button id="theme-btn" onclick="toggleTheme()">
+      <div class="theme-icon">
+        <svg class="moon-icon" width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        <svg class="sun-icon" width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <circle cx="11" cy="11" r="4"/>
+          <line x1="11" y1="1" x2="11" y2="3"/><line x1="11" y1="19" x2="11" y2="21"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="16.36" y1="16.36" x2="17.78" y2="17.78"/>
+          <line x1="1" y1="11" x2="3" y2="11"/><line x1="19" y1="11" x2="21" y2="11"/>
+          <line x1="4.22" y1="17.78" x2="5.64" y2="16.36"/><line x1="16.36" y1="5.64" x2="17.78" y2="4.22"/>
+        </svg>
+      </div>
+      <span>DAY / NIGHT</span>
+    </button>
+    <div class="vis-num">Khanstruct — 2026</div>
+  </div>
+
+  <!-- RIGHT: Nav + hero content -->
+  <div class="hero-right">
+    <nav class="hero-nav">
+      <span class="nav-logo">ZK</span>
+      <ul class="nav-menu">
+        <li><a href="#background">Work</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#hackathons">Hackathons</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+
+    <div class="hero-text">
+      <p class="hero-tag">Founder · AI Engineer · Community Organizer</p>
+      <h1 class="hero-h1">
+        <span class="line"><span>Building</span></span>
+        <span class="line"><span><em>intelligent</em></span></span>
+        <span class="line"><span>systems.</span></span>
+      </h1>
+      <p class="hero-desc">
+        Founder of Khanstruct — an AI-first studio shipping multimodal
+        agents, automation pipelines, and knowledge infrastructure.
+        Tulsa, Oklahoma.
+      </p>
+      <div class="hero-ctas">
+        <a href="#projects" class="btn mag"><span>View Projects ↗</span></a>
+        <a href="mailto:zain@thekhanstruct.com" class="btn btn-outline mag"><span>Get in Touch</span></a>
+      </div>
+    </div>
+
+    <div class="hero-foot">
+      <div class="hero-foot-left">
+        <p>Tulsa, Oklahoma</p>
+        <p>Available 2026</p>
+      </div>
+      <div class="scroll-cue">
+        <div class="scroll-dot"></div>
+        <div class="scroll-line"></div>
+        <span>Scroll</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div id="marquee">
+  <div class="marquee-inner">
+    <!-- doubled for seamless loop -->
+    <span class="m-item">Gemini Live API <span class="m-sep">✦</span></span>
+    <span class="m-item">React / TypeScript <span class="m-sep">✦</span></span>
+    <span class="m-item">Google Cloud Run <span class="m-sep">✦</span></span>
+    <span class="m-item">Vertex AI <span class="m-sep">✦</span></span>
+    <span class="m-item">Python <span class="m-sep">✦</span></span>
+    <span class="m-item">Vector Search <span class="m-sep">✦</span></span>
+    <span class="m-item">Knowledge Graphs <span class="m-sep">✦</span></span>
+    <span class="m-item">LangChain <span class="m-sep">✦</span></span>
+    <span class="m-item">NASA Space Apps <span class="m-sep">✦</span></span>
+    <span class="m-item">GDG Tulsa <span class="m-sep">✦</span></span>
+    <span class="m-item">Devpost Level 6 <span class="m-sep">✦</span></span>
+    <span class="m-item">WebGPU <span class="m-sep">✦</span></span>
+    <span class="m-item">Gemini Live API <span class="m-sep">✦</span></span>
+    <span class="m-item">React / TypeScript <span class="m-sep">✦</span></span>
+    <span class="m-item">Google Cloud Run <span class="m-sep">✦</span></span>
+    <span class="m-item">Vertex AI <span class="m-sep">✦</span></span>
+    <span class="m-item">Python <span class="m-sep">✦</span></span>
+    <span class="m-item">Vector Search <span class="m-sep">✦</span></span>
+    <span class="m-item">Knowledge Graphs <span class="m-sep">✦</span></span>
+    <span class="m-item">LangChain <span class="m-sep">✦</span></span>
+    <span class="m-item">NASA Space Apps <span class="m-sep">✦</span></span>
+    <span class="m-item">GDG Tulsa <span class="m-sep">✦</span></span>
+    <span class="m-item">Devpost Level 6 <span class="m-sep">✦</span></span>
+    <span class="m-item">WebGPU <span class="m-sep">✦</span></span>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- BACKGROUND -->
+<section class="section" id="background">
+  <p class="s-label rv">01 — Background</p>
+  <div class="bg-split">
+    <div>
+      <h2 class="s-h2 rv">Builder.<br><em>Evidence-first.</em><br>Always shipped.</h2>
+    </div>
+    <div class="body rv">
+      <p>I build under the studio identity <strong>Khanstruct</strong> — multimodal AI agents, automation pipelines, and structured knowledge systems. My work spans real production deployments, not mockups.</p>
+      <p>I think in hierarchies. Every system I build is grounded in verifiable inputs, explicit source boundaries, and repeatable outputs. If you can't point to the source, it's not real.</p>
+      <p>16 hackathons. 205 GitHub repos. Devpost Level 6. Google Developer Program since 2022. GDG Tulsa organizer. NASA Space Apps local lead.</p>
+    </div>
+  </div>
+  <div class="quad rv">
+    <div class="quad-item"><div class="q-num">01</div><div class="q-title">Evidence before narrative</div><div class="q-body">Every layer grounded in verifiable inputs with explicit source boundaries. No drift.</div></div>
+    <div class="quad-item"><div class="q-num">02</div><div class="q-title">Ship, then iterate</div><div class="q-body">A deployed agent that does one thing correctly beats a prototype doing everything in theory.</div></div>
+    <div class="quad-item"><div class="q-num">03</div><div class="q-title">Hierarchies clarify everything</div><div class="q-body">Good architecture is a taxonomy. The right structure makes every failure diagnosable.</div></div>
+    <div class="quad-item"><div class="q-num">04</div><div class="q-title">Community is infrastructure</div><div class="q-body">Running GDG Tulsa and NASA Space Apps isn't separate from engineering — it's how the ecosystem stays productive.</div></div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- EXPERIENCE -->
+<section class="section" id="experience">
+  <p class="s-label rv">02 — Experience</p>
+  <h2 class="s-h2 rv">Where I've<br><em>built things.</em></h2>
+  <div class="tl rv">
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-meta">2026 – Present · Tulsa, OK</div>
+      <div class="tl-co scr">Khanstruct</div>
+      <div class="tl-role">Founder & AI Engineer</div>
+      <div class="tl-desc">Independent AI studio. Built Cortana — multimodal AI agent with real-time voice, vision, and UI navigation using Gemini Live API. Submitted to the Gemini API Developer Competition. Designed personal Second Brain at scale in Notion.</div>
+      <div class="tl-tags"><span class="tag">Gemini Live API</span><span class="tag">React</span><span class="tag">TypeScript</span><span class="tag">Cloud Run</span><span class="tag">Python</span></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-meta">2024 – 2025 · Tulsa, OK</div>
+      <div class="tl-co scr">R-Cubed Consulting</div>
+      <div class="tl-role">Business Development, Marketing & Ops</div>
+      <div class="tl-desc">Oracle and NetSuite consulting firm. Owned the full sales pipeline, company website, and marketing operations. Authored the BDR Outbound Handbook. Completed NetSuite SuiteLife Partner Training.</div>
+      <div class="tl-tags"><span class="tag">HubSpot</span><span class="tag">Apollo</span><span class="tag">WordPress</span><span class="tag">Oracle</span><span class="tag">NetSuite</span></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-meta">2024 – 2025 · Tulsa, OK</div>
+      <div class="tl-co scr">Trulo Homes / Red River Dev</div>
+      <div class="tl-role">Marketing Director</div>
+      <div class="tl-desc">Multi-location real estate marketing across 8 markets. Full Google + Meta stack management. Earned Google Ads Display Certification. 26+ Google Business Profile events in a single quarter.</div>
+      <div class="tl-tags"><span class="tag">Google Ads</span><span class="tag">Meta Ads</span><span class="tag">Analytics</span><span class="tag">Looker Studio</span></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-meta">2024 – 2025 · Tulsa, OK</div>
+      <div class="tl-co scr">Rose Rock Development</div>
+      <div class="tl-role">Marketing & Client Operations</div>
+      <div class="tl-desc">Supported marketing and operational materials across Reunion Building, Palace, Adams, and Vandever properties. Meta Business Suite, web development, calendar management.</div>
+      <div class="tl-tags"><span class="tag">Meta Business</span><span class="tag">Canva</span><span class="tag">Google Workspace</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- PROJECTS -->
+<section class="section" id="projects">
+  <p class="s-label rv">03 — Selected Projects</p>
+  <h2 class="s-h2 rv">Real<br><em>deliverables.</em></h2>
+  <div class="projects-grid rv">
+    <div class="p-card" style="--card-c:var(--blue)">
+      <div class="p-n">01 / AI Agent</div>
+      <div class="p-ico">🤖</div>
+      <div class="p-title">Cortana</div>
+      <div class="p-desc">Multimodal conversational AI agent — real-time voice, vision, cinematic visuals, and UI navigation in one conversation. Submitted to Gemini API Developer Competition ($80K prize pool, 11,915 participants).</div>
+      <div class="p-stack"><span>Gemini Live API</span><span>React</span><span>TypeScript</span><span>Cloud Run</span><span>Lit</span></div>
+    </div>
+    <div class="p-card" style="--card-c:var(--purple)">
+      <div class="p-n">02 / Knowledge System</div>
+      <div class="p-ico">🧠</div>
+      <div class="p-title">Blueprint</div>
+      <div class="p-desc">Personal operating system — 14 domain databases, evidence maps, normalization rules, and structured knowledge architecture. The system behind all Khanstruct work.</div>
+      <div class="p-stack"><span>Notion</span><span>Claude API</span><span>Vector Search</span><span>Knowledge Graphs</span></div>
+    </div>
+    <div class="p-card" style="--card-c:var(--green)">
+      <div class="p-n">03 / Multi-Agent</div>
+      <div class="p-ico">⚡</div>
+      <div class="p-title">Gemini Marketing Taskforce</div>
+      <div class="p-desc">Autonomous multi-agent system automating marketing content creation — strategy brief to final copy. Built on Google Cloud ADK. Submitted to ADK Hackathon ($50K prize pool).</div>
+      <div class="p-stack"><span>Google ADK</span><span>Gemini</span><span>Cloud Run</span><span>Python</span></div>
+    </div>
+    <div class="p-card" style="--card-c:#f97316">
+      <div class="p-n">04 / Space Tech</div>
+      <div class="p-ico">🚀</div>
+      <div class="p-title">NASA Space Apps</div>
+      <div class="p-desc">Local lead organizer. Built V2 and V3 of the Space Apps website. Coordinated teams, mentors, and Houston judging operations across multiple years.</div>
+      <div class="p-stack"><span>React</span><span>GitHub</span><span>Program Ops</span></div>
+    </div>
+    <div class="p-card" style="--card-c:#fbbf24">
+      <div class="p-n">05 / Data</div>
+      <div class="p-ico">📊</div>
+      <div class="p-title">Health EHR Dashboard</div>
+      <div class="p-desc">70+ lab test dashboard with trend analysis, filtering, and CSV export. Git-backed with GitHub Pages docs. Built for longitudinal personal health data tracking.</div>
+      <div class="p-stack"><span>React</span><span>Python</span><span>CSV Pipelines</span><span>GitHub Pages</span></div>
+    </div>
+    <div class="p-card" style="--card-c:#06b6d4">
+      <div class="p-n">06 / Geospatial</div>
+      <div class="p-ico">🗺️</div>
+      <div class="p-title">Cortana MapLens</div>
+      <div class="p-desc">Visual memory map turning location history into a clustered, filtered, exportable geospatial timeline. AI-driven insights via Gemini. Submitted to Google Maps Platform Awards.</div>
+      <div class="p-stack"><span>Google Maps API</span><span>React</span><span>Gemini</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- HACKATHONS -->
+<section class="section" id="hackathons">
+  <p class="s-label rv">04 — Competitive Record</p>
+  <h2 class="s-h2 rv">Devpost<br><em>Level 6.</em></h2>
+  <div class="stats-row rv">
+    <div class="stat"><div class="stat-n cnt" data-t="16">0</div><div class="stat-l">Hackathons</div></div>
+    <div class="stat"><div class="stat-n cnt" data-t="8">0</div><div class="stat-l">Shipped Projects</div></div>
+    <div class="stat"><div class="stat-n cnt" data-t="205">0</div><div class="stat-l">GitHub Repos</div></div>
+    <div class="stat"><div class="stat-n">$3M+</div><div class="stat-l">Prize Pools Entered</div></div>
+  </div>
+  <div class="hack-grid rv">
+    <div class="hack"><div class="hack-prize">$80K · 11,915 PARTICIPANTS</div><h4>Gemini Live Agent Challenge</h4><div class="hack-meta">Google · 2026</div><div class="hack-sub">↳ Cortana — Multimodal AI Agent</div></div>
+    <div class="hack"><div class="hack-prize">$100K · 35,628 PARTICIPANTS</div><h4>Gemini 3 Hackathon</h4><div class="hack-meta">Google · Largest Gemini hackathon · 2025–2026</div><div class="hack-sub">↳ Submitted project entry</div></div>
+    <div class="hack"><div class="hack-prize">$50K · 10,376 PARTICIPANTS</div><h4>Agent Dev Kit Hackathon</h4><div class="hack-meta">Google Cloud · 2025</div><div class="hack-sub">↳ Gemini Marketing Taskforce</div></div>
+    <div class="hack"><div class="hack-prize">$1M+ · 128,453 PARTICIPANTS</div><h4>World's Largest Hackathon</h4><div class="hack-meta">Bolt · 2025</div><div class="hack-sub">↳ Submitted project entry</div></div>
+    <div class="hack"><div class="hack-prize">$1M · 1,407 PARTICIPANTS</div><h4>Meta Horizon Creator Competition</h4><div class="hack-meta">Meta · 2025</div><div class="hack-sub">↳ The Spartan Covenant — AI sci-fi game</div></div>
+    <div class="hack"><div class="hack-prize">$35K · 4,367 PARTICIPANTS</div><h4>Perplexity Hackathon</h4><div class="hack-meta">Perplexity · 2025</div><div class="hack-sub">↳ Cortona OS — multi-agent workflow system</div></div>
+    <div class="hack"><div class="hack-prize">3,932 PARTICIPANTS</div><h4>Google Maps Platform Awards</h4><div class="hack-meta">Google · 2025</div><div class="hack-sub">↳ Cortana MapLens</div></div>
+    <div class="hack"><div class="hack-prize">IN-PERSON · HOUSTON · 70 PARTICIPANTS</div><h4>Houston Hackathon 2025</h4><div class="hack-meta">Impact Hub Houston · First in-person achievement</div><div class="hack-sub">↳ Open data solutions for Houston</div></div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- TOOLKIT -->
+<section class="section" id="toolkit">
+  <p class="s-label rv">05 — Toolkit</p>
+  <h2 class="s-h2 rv">How I<br><em>build.</em></h2>
+  <div class="tk-grid rv">
+    <div class="tk-group"><div class="tk-head">AI & ML</div><ul class="tk-list"><li><span class="tk-dot"></span>Gemini Live API</li><li><span class="tk-dot"></span>Google AI Studio / Vertex AI</li><li><span class="tk-dot"></span>LangChain / Vector Search</li><li><span class="tk-dot"></span>Knowledge Graphs</li><li><span class="tk-dot"></span>Claude API / ChatGPT</li><li><span class="tk-dot"></span>GitHub Copilot / Cursor</li></ul></div>
+    <div class="tk-group"><div class="tk-head">Languages & Frameworks</div><ul class="tk-list"><li><span class="tk-dot"></span>TypeScript / JavaScript</li><li><span class="tk-dot"></span>Python</li><li><span class="tk-dot"></span>React / Next.js / Vite</li><li><span class="tk-dot"></span>Lit / WebGPU</li><li><span class="tk-dot"></span>HTML / CSS</li></ul></div>
+    <div class="tk-group"><div class="tk-head">Cloud & DevOps</div><ul class="tk-list"><li><span class="tk-dot"></span>Google Cloud Run</li><li><span class="tk-dot"></span>Google Cloud Storage</li><li><span class="tk-dot"></span>Docker / GitHub Actions</li><li><span class="tk-dot"></span>Vercel / Heroku / Vultr</li><li><span class="tk-dot"></span>GCP Console</li></ul></div>
+    <div class="tk-group"><div class="tk-head">Data & Analytics</div><ul class="tk-list"><li><span class="tk-dot"></span>Google Analytics / GTM</li><li><span class="tk-dot"></span>Looker Studio</li><li><span class="tk-dot"></span>Supabase / PostgreSQL</li><li><span class="tk-dot"></span>AppSheet / Sheets Automation</li></ul></div>
+    <div class="tk-group"><div class="tk-head">Marketing Stack</div><ul class="tk-list"><li><span class="tk-dot"></span>HubSpot / Apollo / ZoomInfo</li><li><span class="tk-dot"></span>Google Ads / Facebook Ads</li><li><span class="tk-dot"></span>Search Console / Semrush</li><li><span class="tk-dot"></span>Meta Business Suite</li><li><span class="tk-dot"></span>WordPress / Yoast SEO</li></ul></div>
+    <div class="tk-group"><div class="tk-head">Design & Media</div><ul class="tk-list"><li><span class="tk-dot"></span>Figma / Canva</li><li><span class="tk-dot"></span>ElevenLabs / Runway ML</li><li><span class="tk-dot"></span>Synthesia / CapCut</li><li><span class="tk-dot"></span>Notion (knowledge systems)</li></ul></div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- CONTACT -->
+<section class="section" id="contact">
+  <p class="s-label rv">06 — Contact</p>
+  <div class="contact-split">
+    <div>
+      <div class="avail rv"><div class="avail-dot"></div>Available — 2026</div>
+      <div class="contact-big rv">Let's build<br>something<br><span class="accent">real.</span></div>
+      <a href="mailto:zain@thekhanstruct.com" class="big-btn rv mag">
+        <span>zain@thekhanstruct.com</span><span>↗</span>
+      </a>
+    </div>
+    <div>
+      <ul class="c-links rv">
+        <li><a href="https://github.com/zainkhan1994" target="_blank"><span>GitHub</span><span class="c-arrow">zainkhan1994 · 205 repos →</span></a></li>
+        <li><a href="http://g.dev/khanstruct" target="_blank"><span>Google Dev Profile</span><span class="c-arrow">g.dev/khanstruct →</span></a></li>
+        <li><a href="https://devpost.com/zainkhan1994-zk" target="_blank"><span>Devpost</span><span class="c-arrow">Level 6 · 16 Hackathons →</span></a></li>
+        <li><a href="https://www.kaggle.com/zainkhan1994zk" target="_blank"><span>Kaggle</span><span class="c-arrow">zainkhan1994 →</span></a></li>
+        <li><a href="https://connect.com/zain.a.khan" target="_blank"><span>Connect.com</span><span class="c-arrow">zain.a.khan →</span></a></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 Zain Khan / Khanstruct</p>
+  <p>Tulsa, Oklahoma · Builder · AI Engineer · Community Organizer</p>
+</footer>
+
+<script>
+/* ── THEME ── */
+function toggleTheme() {
+  const html = document.documentElement;
+  html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
+}
+
+/* ── CURSOR ── */
+const ring = document.getElementById('c-ring');
+const dot  = document.getElementById('c-dot');
+let cx=0,cy=0,tx=0,ty=0;
+document.addEventListener('mousemove', e => {
+  tx = e.clientX; ty = e.clientY;
+  dot.style.left = tx + 'px'; dot.style.top = ty + 'px';
+});
+(function loop() {
+  cx += (tx-cx)*0.1; cy += (ty-cy)*0.1;
+  ring.style.left = cx+'px'; ring.style.top = cy+'px';
+  requestAnimationFrame(loop);
+})();
+document.querySelectorAll('a,button,.p-card,.quad-item,.hack,.stat').forEach(el=>{
+  el.addEventListener('mouseenter', ()=>document.body.classList.add('cursor-hover'));
+  el.addEventListener('mouseleave', ()=>document.body.classList.remove('cursor-hover'));
+});
+document.getElementById('theme-btn').addEventListener('mouseenter',()=>document.body.classList.add('cursor-theme'));
+document.getElementById('theme-btn').addEventListener('mouseleave',()=>document.body.classList.remove('cursor-theme'));
+
+/* ── PARTICLE NETWORK ── */
+(function() {
+  const canvas = document.getElementById('particle-canvas');
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0, mouse = {x: -999, y: -999};
+
+  function size() {
+    W = canvas.width  = canvas.offsetWidth  || canvas.parentElement.offsetWidth  || 700;
+    H = canvas.height = canvas.offsetHeight || canvas.parentElement.offsetHeight || 800;
+  }
+
+  const ro = new ResizeObserver(() => size());
+  ro.observe(canvas.parentElement);
+  setTimeout(size, 50);
+
+  canvas.parentElement.addEventListener('mousemove', e => {
+    const r = canvas.getBoundingClientRect();
+    mouse.x = e.clientX - r.left;
+    mouse.y = e.clientY - r.top;
+  });
+  canvas.parentElement.addEventListener('mouseleave', () => { mouse.x=-999; mouse.y=-999; });
+
+  const N = 72;
+  const LINK_DIST = 130;
+  const pts = [];
+  for(let i=0;i<N;i++) pts.push({
+    x: Math.random(), y: Math.random(),
+    vx: (Math.random()-.5)*.0003,
+    vy: (Math.random()-.5)*.0003,
+    r: Math.random()*1.6+0.6,
+    // hue cycles
+    hue: Math.random()*60 + 200,  // 200–260 = blue/purple
+  });
+
+  let t = 0;
+  function draw() {
+    t++;
+    ctx.clearRect(0,0,W,H);
+
+    // Background gradient (deep space look)
+    const bg = ctx.createRadialGradient(W*.5,H*.45,0,W*.5,H*.5,Math.max(W,H)*.75);
+    bg.addColorStop(0, 'rgba(14,16,48,1)');
+    bg.addColorStop(0.5,'rgba(8,8,24,1)');
+    bg.addColorStop(1,  'rgba(4,4,12,1)');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0,0,W,H);
+
+    // Move particles
+    pts.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if(p.x<0||p.x>1) p.vx*=-1;
+      if(p.y<0||p.y>1) p.vy*=-1;
+
+      // Mouse repel
+      const mx = mouse.x/W, my = mouse.y/H;
+      const dx = p.x - mx, dy = p.y - my;
+      const d2 = dx*dx + dy*dy;
+      if(d2 < 0.015) { p.vx += dx*0.00004; p.vy += dy*0.00004; }
+    });
+
+    // Draw connections
+    for(let i=0;i<N;i++) {
+      for(let j=i+1;j<N;j++) {
+        const a = pts[i], b = pts[j];
+        const dx = (a.x-b.x)*W, dy = (a.y-b.y)*H;
+        const d = Math.sqrt(dx*dx+dy*dy);
+        if(d < LINK_DIST) {
+          const alpha = (1-d/LINK_DIST) * 0.28;
+          const hue = (a.hue+b.hue)/2;
+          ctx.beginPath();
+          ctx.moveTo(a.x*W, a.y*H);
+          ctx.lineTo(b.x*W, b.y*H);
+          ctx.strokeStyle = `hsla(${hue},80%,65%,${alpha})`;
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Draw points
+    pts.forEach(p => {
+      const px = p.x*W, py = p.y*H;
+      const grd = ctx.createRadialGradient(px,py,0,px,py,p.r*3);
+      grd.addColorStop(0, `hsla(${p.hue},85%,75%,0.9)`);
+      grd.addColorStop(1, `hsla(${p.hue},85%,65%,0)`);
+      ctx.fillStyle = grd;
+      ctx.beginPath(); ctx.arc(px,py,p.r*3,0,Math.PI*2); ctx.fill();
+
+      ctx.fillStyle = `hsla(${p.hue},90%,85%,0.95)`;
+      ctx.beginPath(); ctx.arc(px,py,p.r,0,Math.PI*2); ctx.fill();
+    });
+
+    // Central glow (Khanstruct "sun")
+    const cx2 = W*.5, cy2 = H*.5;
+    const sunPulse = Math.sin(t*.025)*.1+1;
+    const sun = ctx.createRadialGradient(cx2,cy2,0,cx2,cy2,120*sunPulse);
+    sun.addColorStop(0,  'rgba(100,180,255,0.22)');
+    sun.addColorStop(0.4,'rgba(80,120,255,0.08)');
+    sun.addColorStop(1,  'rgba(60,80,200,0)');
+    ctx.fillStyle = sun;
+    ctx.beginPath(); ctx.arc(cx2,cy2,120*sunPulse,0,Math.PI*2); ctx.fill();
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ── GSAP ANIMATIONS ── */
+gsap.registerPlugin(ScrollTrigger);
+
+// Hero entrance
+const hero = gsap.timeline({defaults:{ease:'power4.out'}});
+hero.to('.hero-tag',  {opacity:1, y:0, duration:.9, delay:.5})
+    .to('.line span', {y:'0%', duration:1.1, stagger:.13}, '-=.6')
+    .to('.hero-desc', {opacity:1, y:0, duration:.8}, '-=.5')
+    .to('.hero-ctas', {opacity:1, y:0, duration:.7}, '-=.4')
+    .to('.hero-foot', {opacity:1, duration:.7}, '-=.4');
+
+// Scroll reveals
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      gsap.to(e.target, {opacity:1, y:0, duration:1, ease:'power3.out'});
+      observer.unobserve(e.target);
+    }
+  });
+}, {threshold: 0.12});
+document.querySelectorAll('.rv').forEach(el => observer.observe(el));
+
+/* ── COUNTERS ── */
+const cntObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      const el = e.target, target = parseInt(el.dataset.t);
+      const obj = {val:0};
+      gsap.to(obj, {val:target, duration:2.4, ease:'power2.out',
+        onUpdate(){ el.textContent = Math.round(obj.val); }});
+      cntObs.unobserve(el);
+    }
+  });
+}, {threshold:.5});
+document.querySelectorAll('.cnt').forEach(el => cntObs.observe(el));
+
+/* ── 3D CARD TILT ── */
+document.querySelectorAll('.p-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const r = card.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - .5;
+    const y = (e.clientY - r.top)  / r.height - .5;
+    gsap.to(card, {rotateY:x*16, rotateX:-y*12, duration:.35, ease:'power2.out', transformPerspective:900});
+  });
+  card.addEventListener('mouseleave', () => {
+    gsap.to(card, {rotateY:0, rotateX:0, duration:.7, ease:'elastic.out(1,.6)'});
+  });
+});
+
+/* ── MAGNETIC BUTTONS ── */
+document.querySelectorAll('.mag').forEach(btn => {
+  btn.addEventListener('mousemove', e => {
+    const r = btn.getBoundingClientRect();
+    const x = (e.clientX - r.left - r.width/2)  * .3;
+    const y = (e.clientY - r.top  - r.height/2) * .3;
+    gsap.to(btn, {x, y, duration:.4, ease:'power2.out'});
+  });
+  btn.addEventListener('mouseleave', () => {
+    gsap.to(btn, {x:0, y:0, duration:.8, ease:'elastic.out(1,.5)'});
+  });
+});
+
+/* ── TEXT SCRAMBLE on timeline hover ── */
+const chars = '!<>—_/[]{}=+*?#ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+document.querySelectorAll('.scr').forEach(el => {
+  const orig = el.textContent;
+  let req;
+  el.closest('.tl-item').addEventListener('mouseenter', () => {
+    cancelAnimationFrame(req);
+    let f = 0;
+    (function go() {
+      el.textContent = orig.split('').map((c,i) =>
+        f > i*1.8 ? c : (c===' ' ? ' ' : chars[Math.floor(Math.random()*chars.length)])
+      ).join('');
+      if(f++ < orig.length*2) req = requestAnimationFrame(go);
+      else el.textContent = orig;
+    })();
+  });
+});
+
+/* ── NAV scroll style ── */
+window.addEventListener('scroll', () => {
+  document.querySelectorAll('.hero-nav').forEach(n =>
+    n.style.opacity = window.scrollY > 40 ? '0' : '1'
+  );
+});
+</script>
+</body>
+</html>
