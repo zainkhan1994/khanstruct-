@@ -1,0 +1,233 @@
+.footer {
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg-elevated);
+}
+
+.footer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('/gdg-tulsa-earth.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Drifting fog ───────────────────────────────────────────────────────────
+   Two over-wide, blurred gradient layers that crawl in opposite directions at
+   different speeds (with a faint vertical undulation), so the overlap reads as
+   slow, natural flowing fog rather than a looping slide. Sits above the earth
+   backdrop (z 0) but below the content (.inner, z 1), so text stays crisp.
+   Each layer is 200% wide with a 100%-viewport tile; translating exactly 50%
+   of its own width = one tile, so the loop is seamless. */
+.fog {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0;
+  animation: fog-in 2.6s ease 0.15s forwards; /* gentle fade-in on load */
+}
+.fogLayer {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 200%;
+  height: 100%;
+  background-repeat: repeat-x;
+  background-size: 50% 100%;
+  will-change: transform;
+}
+.fogLayer1 {
+  background-image:
+    radial-gradient(38% 42% at 14% 116%, rgba(196, 212, 240, 0.13), transparent 70%),
+    radial-gradient(30% 36% at 44% 122%, rgba(196, 212, 240, 0.09), transparent 72%),
+    radial-gradient(44% 48% at 76% 114%, rgba(196, 212, 240, 0.11), transparent 70%);
+  filter: blur(8px);
+  animation: fog-drift-left 42s linear infinite;
+}
+.fogLayer2 {
+  background-image:
+    radial-gradient(46% 50% at 26% 120%, rgba(176, 196, 232, 0.08), transparent 72%),
+    radial-gradient(38% 44% at 62% 128%, rgba(176, 196, 232, 0.06), transparent 74%),
+    radial-gradient(30% 38% at 92% 118%, rgba(176, 196, 232, 0.07), transparent 72%);
+  filter: blur(14px);
+  opacity: 0.85;
+  animation: fog-drift-right 66s linear infinite;
+}
+
+@keyframes fog-in {
+  to { opacity: 1; }
+}
+/* leftward drift + faint rise/settle — seamless at 0%/100% (Δx = exactly 50%) */
+@keyframes fog-drift-left {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(-25%, -2.5%); }
+  100% { transform: translate(-50%, 0); }
+}
+/* rightward drift, slightly deeper undulation, longer period for parallax */
+@keyframes fog-drift-right {
+  0% { transform: translate(-50%, 0); }
+  50% { transform: translate(-25%, -3.5%); }
+  100% { transform: translate(0, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fog { animation: none; opacity: 1; }
+  .fogLayer1,
+  .fogLayer2 { animation: none; }
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 4rem var(--section-px) 2rem;
+}
+
+.top {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 3rem;
+  margin-bottom: 3rem;
+  padding-bottom: 3rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.logoImg {
+  height: 30px;
+  width: auto;
+  display: block;
+}
+
+.logoMark {
+  width: 24px;
+  height: 24px;
+  background: var(--color-accent);
+  color: #000;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoText {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+.tagline {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+  max-width: 260px;
+}
+
+.location {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  opacity: 0.6;
+}
+
+.navCol {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.colHead {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  opacity: 0.5;
+}
+
+.linkList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  list-style: none;
+}
+
+.link {
+  /* shared by the anchor links and the <button> contact trigger */
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+  /* button reset (no-ops for the anchors) */
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.link:hover {
+  color: var(--color-text);
+}
+
+.bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.copy {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  opacity: 0.5;
+}
+
+@media (max-width: 900px) {
+  .top {
+    grid-template-columns: 1fr 1fr;
+  }
+  .brand {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 540px) {
+  .top {
+    grid-template-columns: 1fr;
+  }
+  .bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -1,0 +1,76 @@
+.section {
+  padding: var(--section-py) var(--section-px);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg-elevated);
+}
+
+.inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: center;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.heading {
+  font-size: clamp(2rem, 4.5vw, 4rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+}
+
+.desc {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  line-height: 1.75;
+  max-width: 440px;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.network {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.svg {
+  width: 100%;
+  max-width: 380px;
+  height: auto;
+}
+
+.svgNode {
+  animation: breathe 3s ease-in-out infinite alternate;
+}
+
+@keyframes breathe {
+  0% { r: inherit; opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+@media (max-width: 900px) {
+  .inner {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  .network {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .svgNode {
+    animation: none;
+  }
+}

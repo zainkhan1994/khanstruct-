@@ -1,0 +1,98 @@
+.section {
+  padding: var(--section-py) var(--section-px);
+  border-top: 1px solid var(--color-border);
+}
+
+.inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 3rem;
+}
+
+.heading {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin-bottom: 1rem;
+}
+
+.desc {
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+  max-width: 440px;
+}
+
+.channels {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.channel {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--color-border);
+  text-decoration: none;
+  color: var(--color-text);
+  transition: background 0.2s;
+}
+
+.channel:last-child {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.channel:hover {
+  background: var(--color-panel);
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin: 0 -1rem;
+}
+
+.channelIcon {
+  width: 36px;
+  height: 36px;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.channelIcon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.channelContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.channelLabel {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.channelDesc {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+}
+
+.channelArrow {
+  color: var(--color-text-muted);
+  font-size: 1.125rem;
+  transition: transform 0.3s;
+}
+
+.channel:hover .channelArrow {
+  transform: translate(4px, -2px);
+  color: var(--color-accent);
+}

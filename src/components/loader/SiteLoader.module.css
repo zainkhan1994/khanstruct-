@@ -1,0 +1,665 @@
+/* ════════════════════════════════════════════════════════════════════════
+   SYSTEM INITIALIZATION — Khanstruct loader
+   ────────────────────────────────────────────────────────────────────────
+   Choreography model:
+   • The full intro is a single CSS timeline. JS flips data-phase from "boot"
+     → "intro" to start every keyframe at once; each element self-schedules
+     via animation-delay. No per-frame JS, no rAF loops.
+   • Durations scale with --sp; first-visit element START times are explicit
+     seconds (spaced ~3–5s) so the long ~30s boot stays choreographed, not a
+     uniform blur. The JS-stepped progress bar drives the % underneath.
+   • Exit is a separate, JS-triggered state (data-phase="exit") so the
+     zoom-through + wipe only start once real assets are ready.
+   Full-mode timeline (≈30s):
+     opening 0.3–1.3s · DESIGN 5.5s · DATA 10s · AI 14.5s · assemble 18.5–19s
+     K-mark 19.6–24s · brand 25s · tagline 27.5s  →  exit ~30s (zoom + wipe)
+   ════════════════════════════════════════════════════════════════════════ */
+
+.loader {
+  --sp: 1.5; /* duration multiplier — element START times are explicit secs below */
+
+  --ld-bg: #050608;
+  --ld-white: #eef1f8;
+  --ld-blue: #5b8cff;
+  --ld-blue-bright: #9cc0ff;
+  --ld-violet: #9a7bff;
+  --ld-dim: #565d70; /* muted gray — status dot start */
+  --ld-green: var(--color-accent); /* bridge to the live site accent */
+  --ld-line: rgba(120, 150, 220, 0.16);
+  --ld-line-strong: rgba(140, 175, 255, 0.5);
+
+  position: fixed;
+  inset: 0;
+  z-index: 9990;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: transparent; /* the two wipe panels provide the black */
+  color: var(--ld-white);
+  /* Account for mobile dynamic viewport (URL bar show/hide). */
+  height: 100dvh;
+  contain: layout paint;
+}
+/* Programmatic focus only (tabIndex -1) — no focus ring on the overlay. */
+.loader:focus {
+  outline: none;
+}
+
+/* ─── Split-wipe panels (the background that parts along the spine) ───────── */
+.panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: var(--ld-bg);
+  z-index: 0;
+}
+.panelTop {
+  top: 0;
+  bottom: 50%;
+}
+.panelBottom {
+  top: 50%;
+  bottom: 0;
+}
+
+/* ─── Texture + vignette ─────────────────────────────────────────────────── */
+.grain {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px;
+  mix-blend-mode: overlay;
+}
+.vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+/* ─── Exit bloom — dormant during boot, flares from center on handoff ─────── */
+.burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 46vmax;
+  height: 46vmax;
+  margin: -23vmax 0 0 -23vmax;
+  border-radius: 50%;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.2);
+  background: radial-gradient(
+    circle,
+    rgba(156, 192, 255, 0.6) 0%,
+    rgba(91, 140, 255, 0.28) 34%,
+    transparent 70%
+  );
+  mix-blend-mode: screen;
+}
+
+/* ─── Architectural background lines (thin electric-blue) ────────────────── */
+.architecture {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  animation: ld-fade-in calc(0.6s * var(--sp)) ease forwards;
+  animation-delay: 0.4s;
+}
+.archLine {
+  stroke: var(--ld-line);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.archTick {
+  stroke: var(--ld-line-strong);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+/* ─── Stage (all timed content lives here, centered) ─────────────────────── */
+.stage {
+  position: relative;
+  z-index: 3;
+  width: min(680px, 86vw);
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+.stageLayer {
+  grid-area: 1 / 1; /* stack signal / disciplines / mark in the same cell */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── Stage 1 — initial signal ───────────────────────────── */
+.signalPoint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: var(--ld-blue-bright);
+  box-shadow: 0 0 12px 2px var(--ld-blue), 0 0 28px 6px rgba(91, 140, 255, 0.35);
+  z-index: 4;
+  opacity: 0;
+  animation: ld-point-in calc(0.3s * var(--sp)) var(--ld-ease, cubic-bezier(0.16, 1, 0.3, 1)) forwards;
+  animation-delay: 0.3s;
+}
+
+.spine {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(540px, 80vw);
+  height: 1px;
+  margin-top: -0.5px;
+  transform: translateX(-50%) scaleX(0);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--ld-line-strong) 18%,
+    var(--ld-blue) 50%,
+    var(--ld-line-strong) 82%,
+    transparent
+  );
+  z-index: 3;
+  animation: ld-spine-grow calc(0.34s * var(--sp)) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.5s;
+}
+
+.sysLabel {
+  position: absolute;
+  top: calc(50% - 2.4rem);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--ld-white);
+  opacity: 0;
+  animation: ld-fade-up calc(0.4s * var(--sp)) ease forwards;
+  animation-delay: 0.8s;
+}
+.sysLabel .sep {
+  color: var(--ld-blue);
+  margin: 0 0.55em;
+}
+.sysLabel .muted {
+  color: var(--ld-dim);
+}
+
+/* ── Stage 2 — three disciplines ────────────────────────── */
+.disciplines {
+  display: flex;
+  gap: clamp(1.25rem, 5vw, 3.5rem);
+  align-items: flex-start;
+  justify-content: center;
+}
+.discipline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  opacity: 0;
+  /* converge target for the assemble step (overridden per column) */
+  --cx: 0px;
+  animation:
+    ld-fade-in calc(0.3s * var(--sp)) ease forwards,
+    ld-converge calc(0.32s * var(--sp)) cubic-bezier(0.6, 0, 0.4, 1) forwards;
+  /* fade-in delay set per nth-child; converge delay shared (post-hold) */
+  animation-delay: var(--in-delay, 0s), 18.5s;
+}
+.discipline:nth-child(1) {
+  --cx: 86px;
+  --in-delay: 5.5s;
+}
+.discipline:nth-child(2) {
+  --cx: 0px;
+  --in-delay: 10s;
+}
+.discipline:nth-child(3) {
+  --cx: -86px;
+  --in-delay: 14.5s;
+}
+
+.branch {
+  width: 1px;
+  height: 26px;
+  background: linear-gradient(to bottom, var(--ld-blue), transparent);
+  transform-origin: top;
+  transform: scaleY(0);
+  animation: ld-grow-y calc(0.26s * var(--sp)) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: var(--in-delay, 0s);
+}
+.branchDot {
+  width: 4px;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 50%;
+  background: var(--ld-blue-bright);
+  box-shadow: 0 0 8px var(--ld-blue);
+}
+
+.word {
+  font-family: var(--font-mono);
+  font-size: clamp(1rem, 3.4vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--ld-white);
+  /* mask reveal */
+  clip-path: inset(0 100% 0 0);
+  animation: ld-mask-reveal calc(0.42s * var(--sp)) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(var(--in-delay, 0s) + 0.12s);
+}
+.descriptor {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  line-height: 1.6;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ld-dim);
+  max-width: 9ch;
+  opacity: 0;
+  animation: ld-fade-up calc(0.36s * var(--sp)) ease forwards;
+  animation-delay: calc(var(--in-delay, 0s) + 0.3s);
+}
+.descriptor b {
+  color: var(--ld-blue);
+  font-weight: 400;
+}
+
+/* ── Stage 3 — assembly: K mark + brand + status ────────── */
+.markWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  opacity: 0;
+  animation: ld-fade-in calc(0.5s * var(--sp)) ease forwards;
+  animation-delay: 19s;
+}
+.kmark {
+  width: 64px;
+  height: 76px;
+  overflow: visible;
+}
+.kStroke {
+  fill: none;
+  stroke: var(--ld-white);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: ld-draw calc(0.4s * var(--sp)) cubic-bezier(0.6, 0, 0.3, 1) forwards;
+}
+.kStroke:nth-child(1) { animation-delay: 19.6s; }
+.kStroke:nth-child(2) { animation-delay: 21.4s; stroke: var(--ld-blue-bright); }
+.kStroke:nth-child(3) { animation-delay: 23.2s; stroke: var(--ld-violet); }
+.kJoint {
+  fill: var(--ld-blue-bright);
+  opacity: 0;
+  animation: ld-fade-in calc(0.3s * var(--sp)) ease forwards;
+  animation-delay: 24s;
+}
+
+.brand {
+  font-family: var(--font-sans);
+  font-size: clamp(1.75rem, 6vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--ld-white);
+  clip-path: inset(0 100% 0 0);
+  animation: ld-mask-reveal calc(0.5s * var(--sp)) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 25s;
+}
+.tagline {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--ld-dim);
+  opacity: 0;
+  animation: ld-fade-up calc(0.4s * var(--sp)) ease forwards;
+  animation-delay: 27.5s;
+}
+.tagline .dotsep { color: var(--ld-blue); margin: 0 0.5em; }
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--ld-dim);
+  opacity: 0;
+  animation: ld-status-on calc(0.4s * var(--sp)) ease forwards;
+  animation-delay: calc(1.72s * var(--sp));
+}
+.statusDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ld-dim);
+  animation: ld-dot-ready calc(0.45s * var(--sp)) ease forwards;
+  animation-delay: calc(1.86s * var(--sp));
+}
+
+/* ── Live loading status bar (persistent, bottom-anchored) ───────────────── */
+.statusBar {
+  position: absolute;
+  bottom: clamp(2rem, 7vh, 4.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: min(460px, 84vw);
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ld-dim);
+  opacity: 0;
+  animation: ld-fade-up calc(0.5s * var(--sp)) ease forwards;
+  animation-delay: 0.6s;
+}
+.barDot {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ld-blue);
+  box-shadow: 0 0 8px var(--ld-blue);
+  transition: background 0.4s ease, box-shadow 0.4s ease;
+  animation: ld-dot-pulse 1.6s ease-in-out infinite;
+}
+.barDotReady {
+  background: var(--ld-green);
+  box-shadow: 0 0 10px var(--ld-green);
+  animation: none;
+}
+.barMsg {
+  flex: 0 0 auto;
+  /* 22-char longest label + 0.12em letter-spacing ⇒ widen to ~28ch so the
+     text never hits the ellipsis (ch ignores letter-spacing). */
+  width: 28ch;
+  color: var(--ld-blue-bright);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.progressTrack {
+  flex: 1 1 auto;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(140, 175, 255, 0.14);
+  overflow: hidden;
+}
+.progressFill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: left center;
+  transform: scaleX(0);
+  background: linear-gradient(90deg, var(--ld-blue), var(--ld-violet));
+  box-shadow: 0 0 8px var(--ld-blue);
+  /* smooth interpolation between the ~60ms JS updates (transform only) */
+  transition: transform 0.14s linear;
+}
+.progressPct {
+  flex: 0 0 auto;
+  width: 4ch;
+  text-align: right;
+  color: var(--ld-white);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   MODE OVERRIDES — reduced motion & quick (repeat-visit) skip the timeline
+   ════════════════════════════════════════════════════════════════════════ */
+.loader[data-mode='reduced'] .signalPoint,
+.loader[data-mode='reduced'] .spine,
+.loader[data-mode='reduced'] .sysLabel,
+.loader[data-mode='reduced'] .disciplines,
+.loader[data-mode='quick'] .signalPoint,
+.loader[data-mode='quick'] .spine,
+.loader[data-mode='quick'] .sysLabel,
+.loader[data-mode='quick'] .disciplines {
+  display: none;
+}
+/* Show the mark immediately (no long assemble) in reduced / quick modes. */
+.loader[data-mode='reduced'] .markWrap,
+.loader[data-mode='quick'] .markWrap {
+  animation: ld-fade-in 0.18s ease forwards;
+  animation-delay: 0s;
+}
+.loader[data-mode='reduced'] .kStroke,
+.loader[data-mode='quick'] .kStroke {
+  stroke-dashoffset: 0;
+  animation: none;
+}
+.loader[data-mode='reduced'] .kJoint,
+.loader[data-mode='quick'] .kJoint,
+.loader[data-mode='reduced'] .brand,
+.loader[data-mode='quick'] .brand,
+.loader[data-mode='reduced'] .tagline,
+.loader[data-mode='quick'] .tagline,
+.loader[data-mode='reduced'] .status,
+.loader[data-mode='quick'] .status {
+  opacity: 1;
+  clip-path: none;
+  animation: none;
+}
+.loader[data-mode='reduced'] .statusDot,
+.loader[data-mode='quick'] .statusDot {
+  background: var(--ld-green);
+  box-shadow: 0 0 8px var(--ld-green);
+  animation: none;
+}
+.loader[data-mode='reduced'] .status,
+.loader[data-mode='quick'] .status {
+  color: var(--ld-white);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   EXIT — split wipe + hero handoff
+   ════════════════════════════════════════════════════════════════════════ */
+.loader[data-phase='exit'] .panelTop {
+  animation: ld-wipe-up calc(0.8s * var(--sp)) cubic-bezier(0.7, 0, 0.2, 1) forwards;
+  animation-delay: calc(0.05s * var(--sp));
+  will-change: transform;
+}
+.loader[data-phase='exit'] .panelBottom {
+  animation: ld-wipe-down calc(0.8s * var(--sp)) cubic-bezier(0.7, 0, 0.2, 1) forwards;
+  animation-delay: calc(0.05s * var(--sp));
+  will-change: transform;
+}
+/* spine flares to full width as it becomes the page's divider line */
+.loader[data-phase='exit'] .spine {
+  animation: ld-spine-flare calc(0.7s * var(--sp)) cubic-bezier(0.7, 0, 0.2, 1) forwards;
+  animation-delay: 0s;
+  will-change: transform, opacity;
+}
+/* First-visit "enter the game" handoff: the stage rushes toward the viewer
+   while the center blooms, so the page feels stepped-into, not faded-to. */
+.loader[data-mode='full'][data-phase='exit'] .stage {
+  animation: ld-zoom-through calc(0.7s * var(--sp)) cubic-bezier(0.55, 0, 0.2, 1) forwards;
+  will-change: transform, opacity, filter;
+}
+.loader[data-mode='full'][data-phase='exit'] .burst {
+  animation: ld-burst calc(0.6s * var(--sp)) cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+.loader[data-phase='exit'] .stage,
+.loader[data-phase='exit'] .architecture,
+.loader[data-phase='exit'] .grain,
+.loader[data-phase='exit'] .vignette,
+.loader[data-phase='exit'] .statusBar {
+  animation: ld-fade-out calc(0.28s * var(--sp)) ease forwards;
+}
+.loader[data-phase='exit'] {
+  pointer-events: none; /* never block clicks during the handoff */
+}
+/* Quick (repeat-visit) mode keeps a short, snappy wipe regardless of --sp. */
+.loader[data-mode='quick'][data-phase='exit'] .panelTop,
+.loader[data-mode='quick'][data-phase='exit'] .panelBottom {
+  animation-duration: 0.34s;
+}
+
+/* ─── Screen-reader-only loading announcement ────────────────────────────── */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   KEYFRAMES
+   ════════════════════════════════════════════════════════════════════════ */
+@keyframes ld-point-in {
+  0% { opacity: 0; transform: scale(0); }
+  55% { opacity: 1; transform: scale(1.5); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes ld-spine-grow {
+  from { transform: translateX(-50%) scaleX(0); }
+  to { transform: translateX(-50%) scaleX(1); }
+}
+@keyframes ld-spine-flare {
+  /* transform-only (no width animation) — flare wider than the viewport, fade */
+  0% { transform: translateX(-50%) scaleX(1); opacity: 1; }
+  60% { transform: translateX(-50%) scaleX(3); opacity: 0.85; }
+  100% { transform: translateX(-50%) scaleX(3); opacity: 0; }
+}
+@keyframes ld-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes ld-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes ld-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes ld-grow-y {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+@keyframes ld-mask-reveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+@keyframes ld-draw {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes ld-converge {
+  to { opacity: 0; transform: translateX(var(--cx)) scale(0.82); }
+}
+@keyframes ld-status-on {
+  from { opacity: 0; }
+  to { opacity: 0.9; }
+}
+@keyframes ld-dot-ready {
+  0% { background: var(--ld-dim); box-shadow: none; }
+  100% { background: var(--ld-green); box-shadow: 0 0 10px var(--ld-green); }
+}
+@keyframes ld-dot-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--ld-blue); }
+  50% { opacity: 0.45; box-shadow: 0 0 3px rgba(91, 140, 255, 0.4); }
+}
+@keyframes ld-wipe-up {
+  to { transform: translateY(-100%); }
+}
+@keyframes ld-wipe-down {
+  to { transform: translateY(100%); }
+}
+/* Stage dives toward the viewer + softens — the "stepping into the page" feel */
+@keyframes ld-zoom-through {
+  0% { opacity: 1; transform: scale(1); filter: blur(0); }
+  60% { opacity: 0.85; }
+  100% { opacity: 0; transform: scale(1.22); filter: blur(3px); }
+}
+/* Center light bloom on handoff */
+@keyframes ld-burst {
+  0% { opacity: 0; transform: scale(0.2); }
+  45% { opacity: 0.85; }
+  100% { opacity: 0; transform: scale(2.6); }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   RESPONSIVE — mobile simplification (fewer fragments, faster, readable)
+   ════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .loader { --sp: 1.1; } /* slightly faster on mobile */
+  .architecture { display: none; } /* drop decorative line fragments */
+  .descriptor { display: none; } /* keep just DESIGN / DATA / AI for clarity */
+  .disciplines { gap: 1.1rem; }
+  .sysLabel { font-size: 0.5625rem; letter-spacing: 0.24em; }
+  .word { font-size: 1.05rem; }
+  .vignette { display: none; }
+}
+
+@media (max-width: 360px) {
+  .sysLabel { letter-spacing: 0.18em; }
+  .disciplines { gap: 0.75rem; }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   CSS-level reduced-motion safety net (in case JS mode detection is bypassed)
+   ════════════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .loader * {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+  }
+  .loader .signalPoint,
+  .loader .spine,
+  .loader .sysLabel,
+  .loader .disciplines {
+    display: none !important;
+  }
+  .loader .kStroke { stroke-dashoffset: 0 !important; }
+  .loader .markWrap,
+  .loader .brand,
+  .loader .tagline,
+  .loader .status,
+  .loader .kJoint {
+    opacity: 1 !important;
+    clip-path: none !important;
+  }
+  .loader .statusDot {
+    background: var(--ld-green) !important;
+    box-shadow: 0 0 8px var(--ld-green) !important;
+  }
+  /* Exit panels still need to move so the loader can clear. */
+  .loader[data-phase='exit'] .panelTop { transform: translateY(-100%) !important; }
+  .loader[data-phase='exit'] .panelBottom { transform: translateY(100%) !important; }
+}

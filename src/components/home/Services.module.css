@@ -1,0 +1,154 @@
+.section {
+  padding: var(--section-py) var(--section-px);
+  border-top: 1px solid var(--color-border);
+}
+
+.inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 4rem;
+  max-width: 640px;
+}
+
+.heading {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 1.5rem;
+}
+
+.heading em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--color-text-muted);
+}
+
+.subheading {
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+  line-height: 1.75;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.card {
+  position: relative;
+  padding: 2rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-panel);
+  transition: background 0.3s, border-color 0.3s;
+  overflow: hidden;
+}
+
+.card:hover {
+  background: var(--color-panel-hover);
+  border-color: rgba(215, 255, 63, 0.2);
+}
+
+.cardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.icon {
+  width: 36px;
+  height: 36px;
+  color: var(--color-accent);
+}
+
+.icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.cardIndex {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.2em;
+  color: var(--color-text-muted);
+  opacity: 0.4;
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 0.875rem;
+}
+
+.cardDesc {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.75;
+  margin-bottom: 1.5rem;
+}
+
+.capabilities {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.capability {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.capIcon {
+  width: 14px;
+  height: 14px;
+  color: var(--color-accent);
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.capIcon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.cardAccent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s var(--ease-out);
+}
+
+.card:hover .cardAccent {
+  transform: scaleX(1);
+}
+
+@media (max-width: 1024px) {
+  .cards {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .section {
+    padding: 4rem 1.5rem;
+  }
+}

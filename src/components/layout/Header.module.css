@@ -1,0 +1,311 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 1.25rem var(--section-px);
+  transition: padding 0.4s var(--ease-out), background 0.4s, border-color 0.4s;
+}
+
+.header.scrolled {
+  padding: 0.75rem var(--section-px);
+  background: rgba(5, 6, 5, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* When the mobile menu is open, keep the top bar fully solid/readable. */
+.header.menuOpen {
+  background: var(--color-bg);
+}
+
+.inner {
+  position: relative;
+  z-index: 2; /* keep logo + hamburger above the full-screen overlay */
+  max-width: var(--max-w);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.logoImg {
+  height: 30px;
+  width: auto;
+  display: block;
+  transition: height 0.4s var(--ease-out);
+}
+
+.header.scrolled .logoImg {
+  height: 26px;
+}
+
+.logoMark {
+  width: 28px;
+  height: 28px;
+  background: var(--color-accent);
+  color: #000;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0;
+}
+
+.logoText {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+.nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.navList {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  list-style: none;
+}
+
+.navLink {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+  position: relative;
+  padding-bottom: 2px;
+}
+
+.navLink::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--color-accent);
+  transition: width 0.3s var(--ease-out);
+}
+
+.navLink:hover {
+  color: var(--color-text);
+}
+
+.navLinkActive {
+  color: var(--color-text);
+}
+
+.navLinkActive::after {
+  width: 100%;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border: 1px solid var(--color-accent);
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 0.25s, color 0.25s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cta:hover {
+  background: var(--color-accent);
+  color: #000;
+}
+
+/* CTA pair (Book a Meeting + Work With Me) */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* Secondary "Book a Meeting" — subtler than the accent CTA so hierarchy holds */
+.book {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.1rem;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: border-color 0.25s, color 0.25s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.book:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* Mobile button */
+.menuBtn {
+  display: none;
+  background: none;
+  border: 1px solid var(--color-border);
+  padding: 0.5rem;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  cursor: none;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.menuIcon {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 18px;
+}
+
+.menuIcon span {
+  display: block;
+  height: 1px;
+  background: var(--color-text);
+  transition: transform 0.3s var(--ease-out), opacity 0.3s;
+}
+
+.menuIconOpen span:nth-child(1) {
+  transform: rotate(45deg) translate(3px, 4px);
+}
+.menuIconOpen span:nth-child(2) {
+  opacity: 0;
+}
+.menuIconOpen span:nth-child(3) {
+  transform: rotate(-45deg) translate(3px, -4px);
+}
+
+/* Mobile menu */
+.mobileMenu {
+  position: fixed;
+  inset: 0;
+  background: var(--color-bg);
+  z-index: 90; /* above page content (z-1), below the header bar (z-100) */
+  display: block;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: calc(5.5rem + env(safe-area-inset-top)) var(--section-px)
+    calc(2rem + env(safe-area-inset-bottom));
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-1rem);
+  transition: opacity 0.35s var(--ease-out), transform 0.35s var(--ease-out);
+}
+
+/* Inner nav centers when it fits, scrolls from the top when it doesn't. */
+.mobileMenu > nav {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.mobileMenuOpen {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateY(0);
+}
+
+.mobileNavList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.mobileNavItem {
+  border-bottom: 1px solid var(--color-border);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.4s var(--ease-out), transform 0.4s var(--ease-out);
+}
+
+.mobileMenuOpen .mobileNavItem {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mobileNavLink {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 0;
+  font-size: clamp(1.5rem, 6vw, 2.5rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--color-text);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.mobileNavLink:hover {
+  color: var(--color-accent);
+}
+
+.mobileNavNum {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.2em;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+}
+
+.mobileCta {
+  margin-top: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.mobileCta > * {
+  justify-content: center;
+}
+
+@media (max-width: 900px) {
+  .nav,
+  .actions {
+    display: none;
+  }
+  .menuBtn {
+    display: flex;
+    margin-left: auto;
+  }
+}
