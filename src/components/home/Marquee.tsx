@@ -1,18 +1,20 @@
 import styles from './Marquee.module.css';
 
-const ITEMS = [
-  'Gemini Live API',
-  'React / TypeScript',
-  'Google Cloud Run',
-  'Vertex AI',
-  'Python',
-  'Vector Search',
-  'Knowledge Graphs',
-  'Google ADK',
-  'GDG Tulsa',
-  'Devpost Level 6',
-  'LangChain',
-  'NASA Space Apps',
+/* eslint-disable @next/next/no-img-element */
+
+const ITEMS: { label: string; icon: string }[] = [
+  { label: 'Gemini Live API', icon: 'gemini-live-api' },
+  { label: 'React / TypeScript', icon: 'react' },
+  { label: 'Google Cloud Run', icon: 'google-cloud-run' },
+  { label: 'Vertex AI', icon: 'vertex-ai' },
+  { label: 'Python', icon: 'python' },
+  { label: 'Vector Search', icon: 'vector-search' },
+  { label: 'Knowledge Graphs', icon: 'knowledge-graphs' },
+  { label: 'Google ADK', icon: 'google-adk' },
+  { label: 'GDG Tulsa', icon: 'google-adk' },
+  { label: 'Devpost Level 6', icon: 'devpost' },
+  { label: 'LangChain', icon: 'langchain' },
+  { label: 'NASA Space Apps', icon: 'nasa' },
 ];
 
 export function Marquee() {
@@ -23,7 +25,8 @@ export function Marquee() {
       <div className={styles.track}>
         {doubled.map((item, i) => (
           <span key={i} className={styles.item}>
-            {item}
+            <img className={styles.icon} src={`/tech/${item.icon}.svg`} alt="" />
+            {item.label}
             <span className={styles.sep}>✦</span>
           </span>
         ))}

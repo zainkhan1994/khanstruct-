@@ -1,78 +1,119 @@
+/* ─── Floating Header (UNABYSS) ──────────────────────────────────────────── */
 .header {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 100;
-  padding: 1.25rem var(--section-px);
-  transition: padding 0.4s var(--ease-out), background 0.4s, border-color 0.4s;
+  z-index: 1000;
+  padding: 1rem var(--section-px);
+  transition: padding 0.4s var(--ease-out);
 }
 
 .header.scrolled {
-  padding: 0.75rem var(--section-px);
-  background: rgba(5, 6, 5, 0.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--color-border);
-}
-
-/* When the mobile menu is open, keep the top bar fully solid/readable. */
-.header.menuOpen {
-  background: var(--color-bg);
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
 }
 
 .inner {
   position: relative;
-  z-index: 2; /* keep logo + hamburger above the full-screen overlay */
-  max-width: var(--max-w);
+  z-index: 2;
+  max-width: var(--max-w-wide);
   margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: 2rem;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0.5rem 0.5rem 1.1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: rgba(10, 10, 14, 0.55);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  transition: background 0.4s var(--ease-out), border-color 0.4s var(--ease-out);
+}
+
+.header.scrolled .inner {
+  background: rgba(10, 10, 14, 0.82);
+  border-color: var(--color-border-strong);
+}
+
+.header.menuOpen .inner {
+  background: rgba(10, 10, 14, 0.9);
+}
+
+/* ─── Logo + core toggle ─────────────────────────────────────────────────── */
+.brand {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .logo {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   text-decoration: none;
   flex-shrink: 0;
 }
 
 .logoImg {
-  height: 30px;
-  width: auto;
-  display: block;
-  transition: height 0.4s var(--ease-out);
-}
-
-.header.scrolled .logoImg {
   height: 26px;
+  width: auto;
+  object-fit: contain;
+  display: block;
 }
 
-.logoMark {
-  width: 28px;
-  height: 28px;
+/* Core-sphere switch — floats out to the right of the logo on hover (absolute,
+   so revealing it never shifts the nav). ON = core present, OFF = absent. */
+.coreToggle {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  margin-left: 0.7rem;
+  width: 40px;
+  height: 22px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.16);
+  opacity: 0;
+  pointer-events: none;
+  cursor: none;
+  transform: translateY(-50%) translateX(-10px);
+  transition: opacity 0.32s ease, transform 0.42s var(--ease-out),
+    background 0.3s ease, border-color 0.3s ease;
+}
+
+.brand:hover .coreToggle,
+.brand:focus-within .coreToggle {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(-50%) translateX(0);
+}
+
+.coreToggleOn {
   background: var(--color-accent);
-  color: #000;
-  font-family: var(--font-mono);
-  font-size: 0.8125rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  letter-spacing: 0;
+  border-color: var(--color-accent);
 }
 
-.logoText {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-text);
+.toggleKnob {
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  transform: translateY(-50%);
+  transition: transform 0.35s var(--ease-out);
 }
 
+.coreToggleOn .toggleKnob {
+  transform: translate(18px, -50%);
+}
+
+/* ─── Desktop Nav (center) ───────────────────────────────────────────────── */
 .nav {
-  flex: 1;
   display: flex;
   justify-content: center;
 }
@@ -80,113 +121,93 @@
 .navList {
   display: flex;
   align-items: center;
-  gap: 2.5rem;
+  gap: 0.15rem;
   list-style: none;
 }
 
 .navLink {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   color: var(--color-text-muted);
   text-decoration: none;
-  transition: color 0.2s;
-  position: relative;
-  padding-bottom: 2px;
-}
-
-.navLink::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 0;
-  height: 1px;
-  background: var(--color-accent);
-  transition: width 0.3s var(--ease-out);
+  white-space: nowrap;
+  transition: color 0.2s, background 0.2s;
 }
 
 .navLink:hover {
   color: var(--color-text);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .navLinkActive {
   color: var(--color-text);
+  background: rgba(255, 255, 255, 0.06);
 }
 
-.navLinkActive::after {
-  width: 100%;
+/* ─── Actions ────────────────────────────────────────────────────────────── */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.book {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s, background 0.2s;
+}
+
+.book:hover {
+  color: var(--color-text);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .cta {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  border: 1px solid var(--color-accent);
-  color: var(--color-accent);
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  gap: 0.4rem;
+  padding: 0.6rem 1.1rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   text-decoration: none;
-  transition: background 0.25s, color 0.25s;
   white-space: nowrap;
-  flex-shrink: 0;
+  transition: filter 0.2s, transform 0.2s var(--ease-out);
 }
 
 .cta:hover {
-  background: var(--color-accent);
-  color: #000;
+  filter: brightness(1.08);
+  transform: translateY(-1px);
 }
 
-/* CTA pair (Book a Meeting + Work With Me) */
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-shrink: 0;
-}
-
-/* Secondary "Book a Meeting" — subtler than the accent CTA so hierarchy holds */
-.book {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1.1rem;
-  border: 1px solid var(--color-border);
-  color: var(--color-text-muted);
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  text-decoration: none;
-  transition: border-color 0.25s, color 0.25s;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.book:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
-}
-
-/* Mobile button */
+/* ─── Mobile Menu Button ─────────────────────────────────────────────────── */
 .menuBtn {
   display: none;
-  background: none;
-  border: 1px solid var(--color-border);
-  padding: 0.5rem;
-  width: 40px;
-  height: 40px;
   align-items: center;
   justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.06);
   cursor: none;
-  margin-left: auto;
-  flex-shrink: 0;
 }
 
 .menuIcon {
@@ -198,40 +219,40 @@
 
 .menuIcon span {
   display: block;
-  height: 1px;
+  height: 1.5px;
+  width: 100%;
   background: var(--color-text);
   transition: transform 0.3s var(--ease-out), opacity 0.3s;
 }
 
 .menuIconOpen span:nth-child(1) {
-  transform: rotate(45deg) translate(3px, 4px);
+  transform: translateY(5.5px) rotate(45deg);
 }
 .menuIconOpen span:nth-child(2) {
   opacity: 0;
 }
 .menuIconOpen span:nth-child(3) {
-  transform: rotate(-45deg) translate(3px, -4px);
+  transform: translateY(-5.5px) rotate(-45deg);
 }
 
-/* Mobile menu */
+/* ─── Mobile Menu Overlay ────────────────────────────────────────────────── */
 .mobileMenu {
   position: fixed;
   inset: 0;
-  background: var(--color-bg);
-  z-index: 90; /* above page content (z-1), below the header bar (z-100) */
-  display: block;
+  z-index: 90;
+  background: rgba(7, 7, 10, 0.97);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  padding: calc(5.5rem + env(safe-area-inset-top)) var(--section-px)
-    calc(2rem + env(safe-area-inset-bottom));
+  padding: calc(6rem + env(safe-area-inset-top)) var(--section-px)
+    calc(2.5rem + env(safe-area-inset-bottom));
   opacity: 0;
   pointer-events: none;
-  transform: translateY(-1rem);
-  transition: opacity 0.35s var(--ease-out), transform 0.35s var(--ease-out);
+  transition: opacity 0.4s var(--ease-out);
 }
 
-/* Inner nav centers when it fits, scrolls from the top when it doesn't. */
 .mobileMenu > nav {
   min-height: 100%;
   display: flex;
@@ -241,8 +262,7 @@
 
 .mobileMenuOpen {
   opacity: 1;
-  pointer-events: all;
-  transform: translateY(0);
+  pointer-events: auto;
 }
 
 .mobileNavList {
@@ -250,12 +270,13 @@
   display: flex;
   flex-direction: column;
   gap: 0;
+  margin-bottom: 2.5rem;
 }
 
 .mobileNavItem {
   border-bottom: 1px solid var(--color-border);
   opacity: 0;
-  transform: translateY(12px);
+  transform: translateY(1rem);
   transition: opacity 0.4s var(--ease-out), transform 0.4s var(--ease-out);
 }
 
@@ -268,9 +289,9 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1.5rem 0;
-  font-size: clamp(1.5rem, 6vw, 2.5rem);
-  font-weight: 700;
+  padding: 1.35rem 0;
+  font-size: clamp(1.75rem, 7vw, 2.5rem);
+  font-weight: 600;
   letter-spacing: -0.03em;
   color: var(--color-text);
   text-decoration: none;
@@ -283,29 +304,32 @@
 
 .mobileNavNum {
   font-family: var(--font-mono);
-  font-size: 0.625rem;
-  letter-spacing: 0.2em;
-  color: var(--color-text-muted);
-  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  color: var(--color-accent);
 }
 
 .mobileCta {
-  margin-top: 2.5rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
+
 .mobileCta > * {
   justify-content: center;
 }
 
-@media (max-width: 900px) {
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 980px) {
   .nav,
-  .actions {
+  .book,
+  .cta {
     display: none;
   }
   .menuBtn {
-    display: flex;
-    margin-left: auto;
+    display: inline-flex;
+  }
+  .inner {
+    padding: 0.45rem 0.5rem 0.45rem 1.1rem;
   }
 }

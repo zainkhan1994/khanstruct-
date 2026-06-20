@@ -60,7 +60,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
     >
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="mask-icon" href="/favicon.svg" color="#d7ff3f" />
         <script dangerouslySetInnerHTML={{ __html: NO_FLASH_SCRIPT }} />
         <noscript>
           {/* Without JS the loader can't tear itself down — hide it and unlock. */}

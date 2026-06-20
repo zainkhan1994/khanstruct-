@@ -44,10 +44,14 @@ export function ContactCTA() {
           </ContactButton>
         </div>
 
-        <div className={`${styles.right} reveal`} data-delay="0.1">
+        <div className={styles.right}>
           <ul className={styles.links} role="list" aria-label="External profiles">
-            {CONTACT_LINKS.map((link) => (
-              <li key={link.label} className={styles.linkItem}>
+            {CONTACT_LINKS.map((link, i) => (
+              <li
+                key={link.label}
+                className={`${styles.linkItem} reveal`}
+                data-delay={`${0.12 + i * 0.1}`}
+              >
                 <a
                   href={link.url}
                   className={styles.link}

@@ -13,11 +13,7 @@ const SERVICES_LINKS = [
 export function Footer() {
   return (
     <footer className={styles.footer} role="contentinfo">
-      {/* Drifting ground fog — subtle natural atmosphere over the earth backdrop */}
-      <div className={styles.fog} aria-hidden="true">
-        <div className={`${styles.fogLayer} ${styles.fogLayer1}`} />
-        <div className={`${styles.fogLayer} ${styles.fogLayer2}`} />
-      </div>
+      <div className={styles.glow} aria-hidden="true" />
 
       <div className={styles.inner}>
         <div className={styles.top}>

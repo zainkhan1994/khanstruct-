@@ -48,64 +48,62 @@ export function Hero() {
 
   return (
     <section className={styles.hero} aria-label="Hero">
-      <div className={styles.inner}>
-        {/* Left: Copy */}
-        <div className={styles.content} ref={contentRef}>
-          <p className={`${styles.label} ${styles.hiddenInit}`} data-reveal data-delay="0.1">
-            Design. Data. AI Implementation.
-          </p>
+      <div className={styles.glow} aria-hidden="true" />
 
-          <h1 className={styles.heading}>
-            <span className={`${styles.line} ${styles.hiddenInit}`} data-reveal data-delay="0.25">
-              <span className={styles.lineInner}>Khanstruct</span>
-            </span>
-          </h1>
+      <div className={styles.inner} ref={contentRef}>
+        <p className={`label ${styles.hiddenInit}`} data-reveal data-delay="0.1">
+          Design · Data · AI Implementation
+        </p>
 
-          <p className={`${styles.description} ${styles.hiddenInit}`} data-reveal data-delay="0.45">
-            I help organizations design better experiences, manage data
-            intelligently, and implement AI systems that drive real impact.
-          </p>
+        <h1 className={`${styles.heading} ${styles.hiddenInit}`} data-reveal data-delay="0.22">
+          Design. Data.<br />
+          <span className={styles.accent}>AI Implementation.</span>
+        </h1>
 
-          <div className={`${styles.ctas} ${styles.hiddenInit}`} data-reveal data-delay="0.6">
-            <Link href="/#contact" className="btn-primary">
-              <span>Work With Me</span>
-              <span aria-hidden="true">→</span>
-            </Link>
-            <a
-              href={BOOK_MEETING_URL}
-              className="btn-outline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <span>Book a Meeting</span>
-              <span aria-hidden="true">↗</span>
-            </a>
-            <Link href="/projects" className="btn-outline">
-              <span>View My Work</span>
-              <span aria-hidden="true">→</span>
-            </Link>
+        <p className={`${styles.description} ${styles.hiddenInit}`} data-reveal data-delay="0.38">
+          Khanstruct helps organizations design better experiences, manage data
+          intelligently, and implement AI systems that drive real impact.
+        </p>
+
+        <div className={`${styles.ctas} ${styles.hiddenInit}`} data-reveal data-delay="0.52">
+          <Link href="/#contact" className="btn-primary">
+            <span>Work With Me</span>
+            <span aria-hidden="true">→</span>
+          </Link>
+          <a
+            href={BOOK_MEETING_URL}
+            className="btn-outline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span>Book a Meeting</span>
+            <span aria-hidden="true">↗</span>
+          </a>
+          <Link href="/projects" className="btn-outline">
+            <span>View My Work</span>
+            <span aria-hidden="true">→</span>
+          </Link>
+        </div>
+
+        <div className={`${styles.credentials} ${styles.hiddenInit}`} data-reveal data-delay="0.62">
+          <div className={styles.credItem}>
+            <span className={styles.credValue}>16</span>
+            <span className={styles.credLabel}>Hackathons</span>
           </div>
-
-          <div className={`${styles.credentials} ${styles.hiddenInit}`} data-reveal data-delay="0.75">
-            <div className={styles.credItem}>
-              <span className={styles.credValue}>16</span>
-              <span className={styles.credLabel}>Hackathons</span>
-            </div>
-            <div className={styles.credDivider} aria-hidden="true" />
-            <div className={styles.credItem}>
-              <span className={styles.credValue}>205+</span>
-              <span className={styles.credLabel}>GitHub Repos</span>
-            </div>
-            <div className={styles.credDivider} aria-hidden="true" />
-            <div className={styles.credItem}>
-              <span className={styles.credValue}>GDG</span>
-              <span className={styles.credLabel}>Tulsa Lead</span>
-            </div>
+          <div className={styles.credDivider} aria-hidden="true" />
+          <div className={styles.credItem}>
+            <span className={styles.credValue}>205+</span>
+            <span className={styles.credLabel}>GitHub Repos</span>
+          </div>
+          <div className={styles.credDivider} aria-hidden="true" />
+          <div className={styles.credItem}>
+            <span className={styles.credValue}>GDG</span>
+            <span className={styles.credLabel}>Tulsa Lead</span>
           </div>
         </div>
 
-        {/* Right: living constellation that forms the K monogram */}
-        <div className={styles.visual}>
+        {/* Gravity-well fabric — wide centerpiece beneath the hero copy */}
+        <div className={`${styles.visual} ${styles.hiddenInit}`} data-reveal data-delay="0.72">
           <HeroParticles />
         </div>
       </div>
@@ -113,7 +111,7 @@ export function Hero() {
       {/* Scroll cue */}
       <div className={`${styles.scrollCue} ${styles.hiddenInit}`} data-reveal data-delay="1.0" aria-hidden="true">
         <div className={styles.scrollLine} />
-        <span className={styles.scrollText}>Scroll to explore</span>
+        <span className={styles.scrollText}>Scroll</span>
       </div>
     </section>
   );

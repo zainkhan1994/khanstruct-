@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { NAV_ITEMS, BOOK_MEETING_URL } from '@/lib/content';
+import { useExperience } from '@/store/experience';
 import styles from './Header.module.css';
 
 export function Header() {
@@ -12,6 +13,17 @@ export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
   const menuRef = useRef<HTMLDivElement>(null);
+  const corePresent = useExperience((s) => s.corePresent);
+  const toggleCore = useExperience((s) => s.toggleCore);
+
+  // On the homepage, clicking the logo toggles the core sphere (and flips the
+  // status switch) instead of navigating — a big, easy click target.
+  const onLogoClick = (e: React.MouseEvent) => {
+    if (pathname === '/') {
+      e.preventDefault();
+      toggleCore();
+    }
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
@@ -57,17 +69,35 @@ export function Header() {
       role="banner"
     >
       <div className={styles.inner}>
-        {/* Logo */}
-        <Link href="/" className={styles.logo} aria-label="Khanstruct home">
-          <Image
-            src="/khanstruct-logo.png"
-            alt="Khanstruct"
-            width={1301}
-            height={344}
-            className={styles.logoImg}
-            priority
-          />
-        </Link>
+        {/* Logo + core toggle (the switch slides out on hover) */}
+        <div className={styles.brand}>
+          <Link
+            href="/"
+            className={styles.logo}
+            aria-label="Khanstruct home"
+            onClick={onLogoClick}
+          >
+            <Image
+              src="/khanstruct-logo.png"
+              alt="Khanstruct"
+              width={1301}
+              height={344}
+              className={styles.logoImg}
+              priority
+            />
+          </Link>
+          <button
+            type="button"
+            className={`${styles.coreToggle} ${corePresent ? styles.coreToggleOn : ''}`}
+            role="switch"
+            aria-checked={corePresent}
+            aria-label={corePresent ? 'Hide the hero core sphere' : 'Show the hero core sphere'}
+            title="Toggle core sphere"
+            onClick={toggleCore}
+          >
+            <span className={styles.toggleKnob} aria-hidden="true" />
+          </button>
+        </div>
 
         {/* Desktop Nav */}
         <nav className={styles.nav} aria-label="Primary navigation">

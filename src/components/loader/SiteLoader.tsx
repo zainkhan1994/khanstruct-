@@ -3,69 +3,42 @@
 /* ════════════════════════════════════════════════════════════════════════
    SYSTEM INITIALIZATION — Khanstruct loader (orchestration)
    ────────────────────────────────────────────────────────────────────────
-   Promise-based flow, no fake percentage:
-     preloadCriticalAssets() → runLoaderIntro() → (wait real readiness)
-       → completeLoader() → store.introDone → runHeroEntrance() (in Hero.tsx)
-   • Minimum meaningful animation always plays, then we wait for real assets
-     (fonts/paint) up to a hard 4s cap so the loader can never get stuck.
-   • Repeat visits (sessionStorage) get a short brand flash; reduced-motion
-     gets a static mark + System Ready and a ~300ms handoff.
+   Readiness-driven flow with an honest, continuously-easing percentage:
+     preloadCriticalAssets() (fonts + paint) runs in parallel with a short
+     brand cinematic. The bar eases toward 100 a little EVERY tick — never
+     stepped, never frozen — and only completes once assets are ready AND the
+     cinematic has played its minimum time → completeLoader() → store.introDone
+     → runHeroEntrance() (in Hero.tsx).
+   • The cinematic always plays for MIN_INTRO_MS (~5.5s) so the discipline +
+     brand reveal is seen; a hard MAX_LOCK_MS cap guarantees it can never stick.
+   • Reduced-motion gets a static mark + System Ready and a quick handoff.
    ════════════════════════════════════════════════════════════════════════ */
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useExperience } from '@/store/experience';
 import styles from './SiteLoader.module.css';
 
-const MAX_LOCK_MS = 34000; // loader can never hold the page longer than this
+const MAX_LOCK_MS = 12000; // safety net: the loader can never hold the page past this
 
-// Reduced-motion users get a short static intro instead of the long sequence.
-// Everyone else — first visit OR refresh — runs the full LOAD_STEPS timeline,
-// so a reload replays the exact same boot (no sessionStorage "seen" shortcut).
+// Reduced-motion users get a short static intro instead of the cinematic.
+// Everyone else — first visit OR refresh — runs the full brand cinematic, so a
+// reload replays the same boot (no sessionStorage "seen" shortcut).
 const TARGET_MS = { reduced: 600 };
 
-// Full-mode boot, stepped so EACH loading action is readable: glide the bar up
-// to the plateau, then dwell ~5–6s on that status before the next module. The
-// plateau %s sit inside their statusFor() bands so the right label shows while
-// it holds. Total ≈ 30s, under MAX_LOCK_MS.
-const STEP_RAMP_MS = 260; // glide time between plateaus
-const LOAD_STEPS = [
-  { to: 16, dwell: 5400 }, // Initializing System
-  { to: 36, dwell: 5400 }, // Loading Design Modules
-  { to: 56, dwell: 5600 }, // Loading Data Modules
-  { to: 76, dwell: 6000 }, // Loading AI Modules
-  { to: 90, dwell: 6000 }, // Calibrating Interface
-  { to: 100, dwell: 0 }, //   System Ready → exit
-];
+// Minimum on-screen time for the full cinematic, kept in sync with the CSS
+// reveal timeline (SiteLoader.module.css) so the disciplines + brand finish
+// drawing before the loader may exit. The percentage is NOT stepped to this —
+// it eases continuously (see `tick`) so it always reads as actively loading.
+const MIN_INTRO_MS = 5400;
 
-// Precompute the ramp/dwell segments once (pure — safe at module scope).
-const STEP_TIMELINE = (() => {
-  const segments: { start: number; end: number; from: number; to: number }[] = [];
-  let t = 0;
-  let prev = 0;
-  for (const s of LOAD_STEPS) {
-    segments.push({ start: t, end: t + STEP_RAMP_MS, from: prev, to: s.to }); // ramp
-    t += STEP_RAMP_MS;
-    if (s.dwell > 0) {
-      segments.push({ start: t, end: t + s.dwell, from: s.to, to: s.to }); // dwell
-      t += s.dwell;
-    }
-    prev = s.to;
-  }
-  return { segments, total: t };
-})();
-
-/** Stepped progress for full mode: dwell on each loading action ~2–3s. */
-function stepProgress(elapsed: number): number {
-  if (elapsed >= STEP_TIMELINE.total) return 100;
-  for (const seg of STEP_TIMELINE.segments) {
-    if (elapsed < seg.end) {
-      const span = seg.end - seg.start;
-      const f = span > 0 ? (elapsed - seg.start) / span : 1;
-      return seg.from + (seg.to - seg.from) * f;
-    }
-  }
-  return 100;
-}
+// Continuous progress easing. Every tick nudges the bar a fraction of the way
+// toward 100, so it never plateaus or jumps a chunk at once — it decelerates
+// naturally like a real download settling. A gentle creep while we wait for
+// real assets + the minimum cinematic time, then a brisk glide to 100 once both
+// are satisfied. Tuned against the ~60ms tick cadence below.
+const EASE_WAIT = 0.02; // decelerating creep → high-80s% by MIN_INTRO_MS, always moving
+const EASE_DONE = 0.16; // ~1s glide up to 100 once assets are ready
+const WAIT_CEIL = 96; // honest cap: the bar never nears 100 until assets truly are ready
 
 type LoaderMode = 'full' | 'reduced';
 type LoaderPhase = 'boot' | 'intro' | 'exit';
@@ -134,8 +107,8 @@ export function SiteLoader() {
     const resolvedMode: LoaderMode = reduced ? 'reduced' : 'full';
 
     // Mirror the CSS --sp speed multiplier so JS exit timing matches the wipe.
-    const sp = small ? 1.1 : 1.5;
-    const targetMs = resolvedMode === 'full' ? STEP_TIMELINE.total : TARGET_MS.reduced;
+    const sp = small ? 0.9 : 1.0;
+    const targetMs = resolvedMode === 'full' ? MIN_INTRO_MS : TARGET_MS.reduced;
     // Full mode uses the slow cinematic wipe (sp-scaled); reduced motion keeps
     // a short snappy exit so those users aren't held up.
     const exitMs = resolvedMode === 'full' ? Math.round(900 * sp) : 380;
@@ -229,17 +202,27 @@ export function SiteLoader() {
       );
     };
 
+    let shown = 0; // current displayed %, eased continuously (never reset/jumped)
     const tick = () => {
       if (signal.aborted) return;
       const elapsed = nowMs() - start;
-      // Full mode dwells on each loading action; short modes ramp linearly.
-      let pct = resolvedMode === 'full' ? stepProgress(elapsed) : (elapsed / targetMs) * 100;
-      // Honest gate: hold near the end until assets are actually ready.
-      if (!assetsReady) pct = Math.min(pct, 92);
-      pct = Math.max(0, Math.min(100, pct));
-      paint(pct);
-      announce(pct);
-      if (pct >= 100) beginExit();
+
+      if (resolvedMode === 'full') {
+        // Hand off only once real assets are ready AND the cinematic has had its
+        // minimum screen time — then glide briskly; until then, creep gently so
+        // the bar is always visibly moving (no plateau, no frozen feel).
+        const ready = assetsReady && elapsed >= MIN_INTRO_MS;
+        shown += (100 - shown) * (ready ? EASE_DONE : EASE_WAIT);
+        if (!ready) shown = Math.min(shown, WAIT_CEIL); // honest: not near-100 till ready
+        else if (shown > 99.4) shown = 100; // snap the final hair so we can exit
+      } else {
+        shown = (elapsed / targetMs) * 100; // reduced motion: quick linear fill
+      }
+
+      shown = Math.max(0, Math.min(100, shown));
+      paint(shown);
+      announce(shown);
+      if (shown >= 100) beginExit();
     };
 
     interval = window.setInterval(tick, 60);
@@ -319,7 +302,7 @@ export function SiteLoader() {
         {/* Stage 2 — disciplines */}
         <div className={`${styles.stageLayer}`}>
           <div className={styles.disciplines}>
-            <div className={styles.discipline}>
+            <div className={styles.discipline} data-k="design">
               <span className={styles.branch} />
               <span className={styles.branchDot} />
               <span className={styles.word}>DESIGN</span>
@@ -327,7 +310,7 @@ export function SiteLoader() {
                 <b>Interface</b> / Brand / Experience
               </span>
             </div>
-            <div className={styles.discipline}>
+            <div className={styles.discipline} data-k="data">
               <span className={styles.branch} />
               <span className={styles.branchDot} />
               <span className={styles.word}>DATA</span>
@@ -335,7 +318,7 @@ export function SiteLoader() {
                 <b>Pipelines</b> / Structure / Insight
               </span>
             </div>
-            <div className={styles.discipline}>
+            <div className={styles.discipline} data-k="ai">
               <span className={styles.branch} />
               <span className={styles.branchDot} />
               <span className={styles.word}>AI</span>

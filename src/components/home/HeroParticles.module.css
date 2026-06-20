@@ -1,9 +1,9 @@
 .wrap {
   position: relative;
   width: 100%;
-  max-width: 560px;
   margin-inline: auto;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 18 / 5;
+  max-height: 50vh;
   /* Fades + settles in once the loader hands off (toggled in JS). */
   opacity: 0;
   transform: scale(0.985);
@@ -17,15 +17,15 @@
   transform: none;
 }
 
-/* Soft depth glow seated behind the field — echoes the loader's blue/violet. */
+/* Soft ambient seat behind the fabric — a faint warm core + cool vignette. */
 .backdrop {
   position: absolute;
   inset: 0;
   border-radius: 24px;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 68% 68% at 50% 44%, rgba(91, 140, 255, 0.07), transparent 70%),
-    radial-gradient(ellipse 60% 60% at 62% 64%, rgba(154, 123, 255, 0.05), transparent 72%);
+    radial-gradient(40% 46% at 50% 54%, rgba(255, 168, 64, 0.12), transparent 62%),
+    radial-gradient(80% 80% at 50% 50%, rgba(120, 140, 180, 0.05), transparent 72%);
 }
 
 .canvas {
@@ -34,35 +34,19 @@
   display: block;
   width: 100%;
   height: 100%;
-  cursor: grab; /* hint: hold to pull the K together */
-}
-
-.canvas:active {
-  cursor: grabbing;
-}
-
-/* Tiny mono caption, bottom-right — ties the visual to the "system" language. */
-.tag {
-  position: absolute;
-  bottom: 0.25rem;
-  right: 0.5rem;
-  font-family: var(--font-mono);
-  font-size: 0.5625rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
-  opacity: 0.4;
-  pointer-events: none;
 }
 
 @media (max-width: 1024px) {
   .wrap {
-    max-width: 440px; /* a touch smaller when stacked above the copy */
+    aspect-ratio: 12 / 5;
+    max-height: 40vh;
   }
 }
 
 @media (max-width: 640px) {
   .wrap {
-    display: none; /* keep mobile focused on copy + fast */
+    /* Keep the fabric on phones — taller aspect so it stays legible. */
+    aspect-ratio: 9 / 5;
+    max-height: 34vh;
   }
 }

@@ -5,18 +5,21 @@
    • The full intro is a single CSS timeline. JS flips data-phase from "boot"
      → "intro" to start every keyframe at once; each element self-schedules
      via animation-delay. No per-frame JS, no rAF loops.
-   • Durations scale with --sp; first-visit element START times are explicit
-     seconds (spaced ~3–5s) so the long ~30s boot stays choreographed, not a
-     uniform blur. The JS-stepped progress bar drives the % underneath.
+   • Durations scale with --sp; element START times are explicit seconds. Each
+     discipline appears, then EMITS a light tuned to its character (DESIGN =
+     prismatic refraction, DATA = structured scan, AI = synaptic pulse).
+   • The JS bar (SiteLoader.tsx) eases the % continuously underneath; it is not
+     locked to these keyframes, only to the MIN_INTRO_MS minimum.
    • Exit is a separate, JS-triggered state (data-phase="exit") so the
      zoom-through + wipe only start once real assets are ready.
-   Full-mode timeline (≈30s):
-     opening 0.3–1.3s · DESIGN 5.5s · DATA 10s · AI 14.5s · assemble 18.5–19s
-     K-mark 19.6–24s · brand 25s · tagline 27.5s  →  exit ~30s (zoom + wipe)
+   Full-mode timeline (≈5.5s):
+     opening 0.15–0.5s · DESIGN 0.7s · DATA 1.4s · AI 2.1s (each + its emit)
+     assemble 3.4–3.5s · K-mark 3.7–4.6s · brand 4.5s · tagline 5.0s
+       →  exit ~5.5s (zoom + wipe)
    ════════════════════════════════════════════════════════════════════════ */
 
 .loader {
-  --sp: 1.5; /* duration multiplier — element START times are explicit secs below */
+  --sp: 1; /* duration multiplier — element START times are explicit secs below */
 
   --ld-bg: #050608;
   --ld-white: #eef1f8;
@@ -113,7 +116,7 @@
   pointer-events: none;
   opacity: 0;
   animation: ld-fade-in calc(0.6s * var(--sp)) ease forwards;
-  animation-delay: 0.4s;
+  animation-delay: 0.2s;
 }
 .archLine {
   stroke: var(--ld-line);
@@ -156,7 +159,7 @@
   z-index: 4;
   opacity: 0;
   animation: ld-point-in calc(0.3s * var(--sp)) var(--ld-ease, cubic-bezier(0.16, 1, 0.3, 1)) forwards;
-  animation-delay: 0.3s;
+  animation-delay: 0.15s;
 }
 
 .spine {
@@ -177,7 +180,7 @@
   );
   z-index: 3;
   animation: ld-spine-grow calc(0.34s * var(--sp)) cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: 0.5s;
+  animation-delay: 0.25s;
 }
 
 .sysLabel {
@@ -193,7 +196,7 @@
   color: var(--ld-white);
   opacity: 0;
   animation: ld-fade-up calc(0.4s * var(--sp)) ease forwards;
-  animation-delay: 0.8s;
+  animation-delay: 0.4s;
 }
 .sysLabel .sep {
   color: var(--ld-blue);
@@ -211,6 +214,7 @@
   justify-content: center;
 }
 .discipline {
+  position: relative; /* anchor for the per-discipline light (::before / ::after) */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -218,29 +222,42 @@
   opacity: 0;
   /* converge target for the assemble step (overridden per column) */
   --cx: 0px;
+  --accent: var(--ld-blue-bright);
   animation:
     ld-fade-in calc(0.3s * var(--sp)) ease forwards,
     ld-converge calc(0.32s * var(--sp)) cubic-bezier(0.6, 0, 0.4, 1) forwards;
-  /* fade-in delay set per nth-child; converge delay shared (post-hold) */
-  animation-delay: var(--in-delay, 0s), 18.5s;
+  /* fade-in delay set per discipline; converge delay shared (post-emit) */
+  animation-delay: var(--in-delay, 0s), 3.4s;
 }
-.discipline:nth-child(1) {
+/* Per-discipline identity: when it appears (--in-delay), when it emits light
+   (--emit-delay / --emit-dur), and the colour of that light (--accent). */
+.discipline[data-k='design'] {
   --cx: 86px;
-  --in-delay: 5.5s;
+  --in-delay: 0.7s;
+  --emit-delay: 1.05s;
+  --emit-dur: 0.9s;
+  --accent: #ff7ec8; /* iris/pink — representative of the spectrum it blooms */
 }
-.discipline:nth-child(2) {
+.discipline[data-k='data'] {
   --cx: 0px;
-  --in-delay: 10s;
+  --in-delay: 1.4s;
+  --emit-delay: 1.75s;
+  --emit-dur: 0.85s;
+  --accent: #3fe9ff; /* clean signal cyan */
 }
-.discipline:nth-child(3) {
+.discipline[data-k='ai'] {
   --cx: -86px;
-  --in-delay: 14.5s;
+  --in-delay: 2.1s;
+  --emit-delay: 2.45s;
+  --emit-dur: 1.05s;
+  --accent: #b07bff; /* synaptic violet */
+  --accent2: #ff5ec4; /* magenta core */
 }
 
 .branch {
   width: 1px;
   height: 26px;
-  background: linear-gradient(to bottom, var(--ld-blue), transparent);
+  background: linear-gradient(to bottom, var(--accent), transparent);
   transform-origin: top;
   transform: scaleY(0);
   animation: ld-grow-y calc(0.26s * var(--sp)) cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -251,20 +268,31 @@
   height: 4px;
   margin-top: -2px;
   border-radius: 50%;
-  background: var(--ld-blue-bright);
-  box-shadow: 0 0 8px var(--ld-blue);
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
 }
 
 .word {
+  position: relative;
+  z-index: 1; /* sit above the ::before light bloom */
   font-family: var(--font-mono);
   font-size: clamp(1rem, 3.4vw, 1.5rem);
   font-weight: 700;
   letter-spacing: 0.12em;
   color: var(--ld-white);
-  /* mask reveal */
+  /* mask reveal that "opens" its clip afterward so the emit glow can bleed */
   clip-path: inset(0 100% 0 0);
-  animation: ld-mask-reveal calc(0.42s * var(--sp)) cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: calc(var(--in-delay, 0s) + 0.12s);
+  animation:
+    ld-word-reveal calc(0.5s * var(--sp)) cubic-bezier(0.16, 1, 0.3, 1)
+      calc(var(--in-delay, 0s) + 0.12s) forwards,
+    ld-word-glow var(--emit-dur, 0.9s) ease var(--emit-delay, 0s) forwards;
+}
+/* DESIGN glows with a prismatic split (chromatic aberration) instead of a flat hue */
+.discipline[data-k='design'] .word {
+  animation:
+    ld-word-reveal calc(0.5s * var(--sp)) cubic-bezier(0.16, 1, 0.3, 1)
+      calc(var(--in-delay, 0s) + 0.12s) forwards,
+    ld-word-glow-design var(--emit-dur, 0.9s) ease var(--emit-delay, 0s) forwards;
 }
 .descriptor {
   font-family: var(--font-mono);
@@ -279,8 +307,76 @@
   animation-delay: calc(var(--in-delay, 0s) + 0.3s);
 }
 .descriptor b {
-  color: var(--ld-blue);
+  color: var(--accent, var(--ld-blue));
   font-weight: 400;
+}
+
+/* ── Per-discipline "emit" — light tuned to each discipline's character ───── */
+/* Shared bloom layer, sits behind the word (z-index 0 < .word's 1). Each
+   data-k below supplies its own fill + keyframe so the light differs in kind,
+   not just colour: DESIGN refracts, DATA scans, AI fires. */
+.discipline::before {
+  content: '';
+  position: absolute;
+  top: 48%;
+  left: 50%;
+  width: 168%;
+  height: 2.4em;
+  transform: translate(-50%, -50%) scale(0.35);
+  border-radius: 999px;
+  opacity: 0;
+  pointer-events: none;
+  filter: blur(15px);
+  mix-blend-mode: screen;
+  z-index: 0;
+}
+
+/* DESIGN — prismatic refraction: a full-spectrum halo blooms and drifts in hue,
+   the way light splits through a prism. Brand / colour / experience. */
+.discipline[data-k='design']::before {
+  background: conic-gradient(from 200deg, #ff5ea0, #ffcf5e, #5effa6, #5ec9ff, #b06bff, #ff5ea0);
+  animation:
+    ld-emit-bloom var(--emit-dur) cubic-bezier(0.2, 0.7, 0.2, 1) var(--emit-delay) forwards,
+    ld-emit-hue 7s linear var(--emit-delay) infinite;
+}
+
+/* DATA — structured signal: a calm cyan field, with a bright scan bar that
+   sweeps the word once like a reader passing over a record. Pipelines / insight. */
+.discipline[data-k='data']::before {
+  background: radial-gradient(ellipse 64% 100% at 50% 50%, var(--accent), transparent 72%);
+  animation: ld-emit-bloom var(--emit-dur) cubic-bezier(0.2, 0.7, 0.2, 1) var(--emit-delay)
+    forwards;
+}
+.discipline[data-k='data']::after {
+  content: '';
+  position: absolute;
+  top: 48%;
+  left: 50%;
+  width: 118%;
+  height: 1.7em;
+  transform: translate(-50%, -50%);
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  z-index: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(63, 233, 255, 0.45) 42%,
+    #eafdff 50%,
+    rgba(63, 233, 255, 0.45) 58%,
+    transparent 100%
+  );
+  animation: ld-emit-scan calc(var(--emit-dur) * 0.95) cubic-bezier(0.45, 0, 0.2, 1)
+    calc(var(--emit-delay) + 0.08s) forwards;
+}
+
+/* AI — synaptic pulse: a violet→magenta core fires, recoils, fires again, then
+   settles to a faint living glow. Agents / automation / intelligence. */
+.discipline[data-k='ai']::before {
+  background: radial-gradient(circle, var(--accent2) 0%, var(--accent) 40%, transparent 70%);
+  animation: ld-emit-synapse var(--emit-dur) ease-out var(--emit-delay) forwards;
 }
 
 /* ── Stage 3 — assembly: K mark + brand + status ────────── */
@@ -291,7 +387,7 @@
   gap: 1rem;
   opacity: 0;
   animation: ld-fade-in calc(0.5s * var(--sp)) ease forwards;
-  animation-delay: 19s;
+  animation-delay: 3.5s;
 }
 .kmark {
   width: 64px;
@@ -308,14 +404,14 @@
   stroke-dashoffset: 1;
   animation: ld-draw calc(0.4s * var(--sp)) cubic-bezier(0.6, 0, 0.3, 1) forwards;
 }
-.kStroke:nth-child(1) { animation-delay: 19.6s; }
-.kStroke:nth-child(2) { animation-delay: 21.4s; stroke: var(--ld-blue-bright); }
-.kStroke:nth-child(3) { animation-delay: 23.2s; stroke: var(--ld-violet); }
+.kStroke:nth-child(1) { animation-delay: 3.7s; }
+.kStroke:nth-child(2) { animation-delay: 4s; stroke: var(--ld-blue-bright); }
+.kStroke:nth-child(3) { animation-delay: 4.3s; stroke: var(--ld-violet); }
 .kJoint {
   fill: var(--ld-blue-bright);
   opacity: 0;
   animation: ld-fade-in calc(0.3s * var(--sp)) ease forwards;
-  animation-delay: 24s;
+  animation-delay: 4.6s;
 }
 
 .brand {
@@ -327,7 +423,7 @@
   color: var(--ld-white);
   clip-path: inset(0 100% 0 0);
   animation: ld-mask-reveal calc(0.5s * var(--sp)) cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: 25s;
+  animation-delay: 4.5s;
 }
 .tagline {
   font-family: var(--font-mono);
@@ -337,7 +433,7 @@
   color: var(--ld-dim);
   opacity: 0;
   animation: ld-fade-up calc(0.4s * var(--sp)) ease forwards;
-  animation-delay: 27.5s;
+  animation-delay: 5s;
 }
 .tagline .dotsep { color: var(--ld-blue); margin: 0 0.5em; }
 
@@ -382,7 +478,7 @@
   color: var(--ld-dim);
   opacity: 0;
   animation: ld-fade-up calc(0.5s * var(--sp)) ease forwards;
-  animation-delay: 0.6s;
+  animation-delay: 0.3s;
 }
 .barDot {
   flex: 0 0 auto;
@@ -577,6 +673,50 @@
   from { clip-path: inset(0 100% 0 0); }
   to { clip-path: inset(0 0 0 0); }
 }
+/* Word wipe that "opens" its clip past the text box at the end, so the emit
+   text-shadow glow can bleed outward instead of being clipped to the glyphs. */
+@keyframes ld-word-reveal {
+  0% { clip-path: inset(0 100% 0 0); }
+  72% { clip-path: inset(0 0 0 0); }
+  100% { clip-path: inset(-80% -120% -80% -120%); }
+}
+/* Generic word glow (DATA / AI) — swells, then settles to a faint residual. */
+@keyframes ld-word-glow {
+  0%, 16% { text-shadow: 0 0 0 rgba(0, 0, 0, 0); }
+  46% { text-shadow: 0 0 14px var(--accent), 0 0 30px var(--accent); }
+  100% { text-shadow: 0 0 7px var(--accent); }
+}
+/* DESIGN word glow — chromatic split (red/blue offset) for a refracted look. */
+@keyframes ld-word-glow-design {
+  0%, 16% { text-shadow: 0 0 0 rgba(0, 0, 0, 0); }
+  46% { text-shadow: -2px 0 13px #ff5ea0, 2px 0 13px #5ec9ff, 0 0 26px #b06bff; }
+  100% { text-shadow: -1px 0 7px #ff5ea0, 1px 0 7px #5ec9ff; }
+}
+/* Emit — shared bloom: scale up + flash, settle to a faint living aura. */
+@keyframes ld-emit-bloom {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.35); }
+  35% { opacity: 0.95; transform: translate(-50%, -50%) scale(1.06); }
+  100% { opacity: 0.32; transform: translate(-50%, -50%) scale(1); }
+}
+/* Emit — DESIGN: slow hue drift on the prismatic halo (keeps the blur). */
+@keyframes ld-emit-hue {
+  to { filter: blur(15px) hue-rotate(360deg); }
+}
+/* Emit — DATA: a bright bar sweeps left→right across the word, then clears. */
+@keyframes ld-emit-scan {
+  0% { opacity: 0; transform: translate(-168%, -50%); }
+  12% { opacity: 0.95; }
+  88% { opacity: 0.95; }
+  100% { opacity: 0; transform: translate(64%, -50%); }
+}
+/* Emit — AI: synaptic double-fire (spike, recoil, spike) settling to a glow. */
+@keyframes ld-emit-synapse {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+  24% { opacity: 0.95; transform: translate(-50%, -50%) scale(1.12); }
+  44% { opacity: 0.38; transform: translate(-50%, -50%) scale(0.84); }
+  68% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.05); }
+  100% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.98); }
+}
 @keyframes ld-draw {
   to { stroke-dashoffset: 0; }
 }
@@ -618,7 +758,7 @@
    RESPONSIVE — mobile simplification (fewer fragments, faster, readable)
    ════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 640px) {
-  .loader { --sp: 1.1; } /* slightly faster on mobile */
+  .loader { --sp: 0.9; } /* slightly faster on mobile */
   .architecture { display: none; } /* drop decorative line fragments */
   .descriptor { display: none; } /* keep just DESIGN / DATA / AI for clarity */
   .disciplines { gap: 1.1rem; }

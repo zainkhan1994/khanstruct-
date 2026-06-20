@@ -72,14 +72,20 @@ Zustand store distributed via hooks. No context overhead.
 
 ### Design Tokens (`src/app/globals.css`)
 
+Dark, card-driven landing aesthetic — near-black neutral background, lime accent,
+warm amber hero-orb glow. Sections use a centered eyebrow-pill + heading pattern,
+rounded card surfaces, and rounded buttons.
+
 ```css
---color-bg: #050605
---color-bg-elevated: #0a0b09
---color-panel: #0d0e0c
---color-accent: #d7ff3f
---color-text: #f2f3ef
---color-text-muted: #8b8e84
---color-border: rgba(255,255,255,0.10)
+--color-bg: #07070a
+--color-bg-elevated: #0c0c11
+--color-panel: #0e0e13
+--color-accent: #d7ff3f        /* lime */
+--color-warm: #ffb347          /* hero-orb core glow */
+--color-text: #f3f3f0
+--color-text-muted: #8a8a96
+--color-border: rgba(255,255,255,0.07)
+--radius: 16px                 /* card radius; --radius-sm 10px, --radius-lg 24px, --radius-pill 100px */
 ```
 
 ### Content (`src/lib/content.ts`)

@@ -22,15 +22,13 @@ export function Projects() {
       <div className={styles.inner}>
         <div className={styles.header}>
           <p className="label reveal">Selected Work</p>
-          <div className={styles.headerRow}>
-            <h2 id="projects-heading" className={`${styles.heading} reveal`} data-delay="0.08">
-              Building solutions<br />
-              <em>that make an impact</em>
-            </h2>
-            <p className={`${styles.subheading} reveal`} data-delay="0.12">
-              A selection of projects across design, data, and AI implementation.
-            </p>
-          </div>
+          <h2 id="projects-heading" className={`${styles.heading} reveal`} data-delay="0.08">
+            Building solutions<br />
+            <em>that make an impact</em>
+          </h2>
+          <p className={`${styles.subheading} reveal`} data-delay="0.12">
+            A selection of projects across design, data, and AI implementation.
+          </p>
         </div>
 
         <div className={styles.grid} role="list">

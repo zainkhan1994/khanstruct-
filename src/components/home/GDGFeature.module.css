@@ -1,35 +1,43 @@
 .section {
   padding: var(--section-py) var(--section-px);
-  border-top: 1px solid var(--color-border);
-  background: var(--color-bg-elevated);
 }
 
 .inner {
+  position: relative;
   max-width: var(--max-w);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5rem;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: clamp(2rem, 5vw, 4rem);
   align-items: center;
+  padding: clamp(2rem, 5vw, 4rem);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background:
+    radial-gradient(70% 120% at 100% 0%, var(--color-accent-dim), transparent 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0) 60%),
+    var(--color-panel);
+  overflow: hidden;
 }
 
 .content {
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
+  align-items: flex-start;
+  gap: 1.5rem;
 }
 
 .heading {
-  font-size: clamp(2rem, 4vw, 3.5rem);
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 0.95;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
 }
 
 .description {
   font-size: 1rem;
   color: var(--color-text-muted);
-  line-height: 1.75;
+  line-height: 1.7;
   max-width: 480px;
 }
 
@@ -42,7 +50,9 @@
   display: flex;
   gap: 2.5rem;
   padding-top: 1.5rem;
+  margin-top: 0.25rem;
   border-top: 1px solid var(--color-border);
+  width: 100%;
 }
 
 .stat {
@@ -53,7 +63,7 @@
 
 .statVal {
   font-family: var(--font-mono);
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 700;
   letter-spacing: -0.03em;
   color: var(--color-text);
@@ -62,7 +72,7 @@
 .statLbl {
   font-family: var(--font-mono);
   font-size: 0.5625rem;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--color-text-muted);
 }
@@ -76,8 +86,8 @@
 
 .globe {
   position: relative;
-  width: 320px;
-  height: 320px;
+  width: 300px;
+  height: 300px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -86,7 +96,7 @@
 .globeRing {
   position: absolute;
   inset: 0;
-  border: 1px solid rgba(215, 255, 63, 0.1);
+  border: 1px solid rgba(215, 255, 63, 0.12);
   border-radius: 50%;
   transform: scale(var(--scale, 1));
 }
@@ -96,8 +106,9 @@
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #0d1a0a 0%, #050605 100%);
-  border: 1px solid rgba(215, 255, 63, 0.15);
+  background: radial-gradient(circle at 35% 30%, rgba(215, 255, 63, 0.14), #0a0d04 70%);
+  border: 1px solid rgba(215, 255, 63, 0.2);
+  box-shadow: 0 0 60px -20px rgba(215, 255, 63, 0.5);
 }
 
 .tulsaPin {
@@ -134,7 +145,7 @@
 
 .globeLabel {
   position: absolute;
-  bottom: 2rem;
+  bottom: 1.5rem;
   left: 50%;
   transform: translateX(-50%);
   font-family: var(--font-mono);
@@ -142,16 +153,26 @@
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--color-accent);
-  opacity: 0.7;
+  opacity: 0.75;
   white-space: nowrap;
 }
 
 @media (max-width: 900px) {
   .inner {
     grid-template-columns: 1fr;
-    gap: 3rem;
+    gap: 2.5rem;
   }
   .visual {
-    display: none;
+    order: -1;
+  }
+  .globe {
+    width: 240px;
+    height: 240px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pinPulse {
+    animation: none;
   }
 }

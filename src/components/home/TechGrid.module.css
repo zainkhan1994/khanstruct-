@@ -1,0 +1,129 @@
+.section {
+  padding: var(--section-py) var(--section-px);
+}
+
+.inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.25rem;
+  max-width: 680px;
+  margin: 0 auto clamp(3rem, 6vw, 4.5rem);
+}
+
+.heading {
+  font-size: clamp(2rem, 4.4vw, 3.4rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  color: var(--color-text);
+}
+
+.heading em {
+  font-style: normal;
+  color: var(--color-text-muted);
+}
+
+.sub {
+  font-size: clamp(0.95rem, 1.4vw, 1.0625rem);
+  color: var(--color-text-muted);
+  line-height: 1.65;
+  max-width: 560px;
+}
+
+/* Tile grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.75rem;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  aspect-ratio: 1 / 1;
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0) 60%),
+    var(--color-panel);
+  text-align: center;
+  transition: border-color 0.3s, background 0.3s, transform 0.3s var(--ease-out);
+}
+
+.tile:hover {
+  border-color: var(--color-border-active);
+  background: var(--color-panel-hover);
+  transform: translateY(-3px);
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-elevated);
+  transition: border-color 0.3s, transform 0.3s var(--ease-out);
+}
+
+.icon img {
+  width: 26px;
+  height: 26px;
+  display: block;
+  object-fit: contain;
+  /* Monochrome at rest; reveals its true brand colour on hover. */
+  filter: grayscale(1);
+  opacity: 0.55;
+  transition: filter 0.35s var(--ease-out), opacity 0.35s var(--ease-out);
+}
+
+.tile:hover .icon {
+  border-color: var(--color-border-active);
+  transform: scale(1.05);
+}
+
+.tile:hover .icon img {
+  filter: grayscale(0);
+  opacity: 1;
+}
+
+.name {
+  font-size: 0.7rem;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.625rem;
+  }
+  .icon {
+    width: 42px;
+    height: 42px;
+  }
+  .icon img {
+    width: 23px;
+    height: 23px;
+  }
+}

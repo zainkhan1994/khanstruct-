@@ -4,24 +4,39 @@
 
 /* ─── Design Tokens ─────────────────────────────────────────────────────── */
 :root {
-  --color-bg: #050605;
-  --color-bg-elevated: #0a0b09;
-  --color-panel: #0d0e0c;
-  --color-panel-hover: #121410;
-  --color-text: #f2f3ef;
-  --color-text-muted: #8b8e84;
-  --color-border: rgba(255, 255, 255, 0.10);
-  --color-border-active: rgba(215, 255, 63, 0.55);
+  --color-bg: #07070a;
+  --color-bg-elevated: #0c0c11;
+  --color-panel: #0e0e13;
+  --color-panel-2: #121218;
+  --color-panel-hover: #16161d;
+  --color-text: #f3f3f0;
+  --color-text-muted: #8a8a96;
+  --color-text-dim: #5a5a66;
+  --color-border: rgba(255, 255, 255, 0.07);
+  --color-border-strong: rgba(255, 255, 255, 0.13);
+  --color-border-active: rgba(215, 255, 63, 0.5);
   --color-accent: #d7ff3f;
+  --color-accent-text: #0a0d02;
   --color-accent-soft: rgba(215, 255, 63, 0.12);
   --color-accent-dim: rgba(215, 255, 63, 0.06);
+
+  /* Warm hero orb — the glowing core of the UNABYSS hero constellation. */
+  --color-warm: #ffb347;
+  --color-warm-core: #ffe2b0;
+  --color-warm-soft: rgba(255, 162, 60, 0.18);
 
   --font-sans: var(--font-space-grotesk), system-ui, sans-serif;
   --font-mono: var(--font-space-mono), ui-monospace, monospace;
 
-  --max-w: 1400px;
-  --section-px: clamp(1.5rem, 5vw, 6rem);
-  --section-py: clamp(5rem, 10vw, 10rem);
+  --max-w: 1240px;
+  --max-w-wide: 1440px;
+  --section-px: clamp(1.25rem, 5vw, 4rem);
+  --section-py: clamp(4.5rem, 9vw, 8rem);
+
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 100px;
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
@@ -72,9 +87,9 @@ body {
 /* ─── Typography ─────────────────────────────────────────────────────────── */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-sans);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 0.95;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.02;
 }
 
 /* ─── Focus ──────────────────────────────────────────────────────────────── */
@@ -99,6 +114,7 @@ h1, h2, h3, h4, h5, h6 {
   text-transform: uppercase;
   text-decoration: none;
   font-weight: 700;
+  border-radius: var(--radius-sm);
   transition: top 0.2s;
 }
 .skip-link:focus {
@@ -111,7 +127,7 @@ h1, h2, h3, h4, h5, h6 {
   position: fixed;
   inset: 0;
   z-index: 9998;
-  opacity: 0.025;
+  opacity: 0.02;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 200px;
   mix-blend-mode: overlay;
@@ -175,26 +191,61 @@ body.cursor-hover .cursor-ring {
   padding: var(--section-py) var(--section-px);
 }
 
-/* ─── Labels ─────────────────────────────────────────────────────────────── */
+/* ─── Centered Section Header (UNABYSS pattern) ──────────────────────────── */
+.section-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.25rem;
+  max-width: 720px;
+  margin: 0 auto clamp(3rem, 6vw, 5rem);
+}
+
+.section-title {
+  font-size: clamp(2rem, 4.4vw, 3.4rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  color: var(--color-text);
+}
+
+.section-title em {
+  font-style: normal;
+  color: var(--color-text-muted);
+}
+
+.section-sub {
+  font-size: clamp(0.95rem, 1.4vw, 1.0625rem);
+  line-height: 1.65;
+  color: var(--color-text-muted);
+  max-width: 600px;
+}
+
+/* ─── Labels / Eyebrow Pill ──────────────────────────────────────────────── */
 .label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: center;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-dim);
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  letter-spacing: 0.2em;
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--color-accent);
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 2.5rem;
 }
 
 .label::before {
   content: '';
-  display: inline-block;
-  width: 2rem;
-  height: 1px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
   background: var(--color-accent);
-  opacity: 0.5;
+  box-shadow: 0 0 8px var(--color-accent);
 }
 
 /* ─── Dividers ───────────────────────────────────────────────────────────── */
@@ -203,71 +254,81 @@ body.cursor-hover .cursor-ring {
   background: var(--color-border);
 }
 
-/* ─── Button System ──────────────────────────────────────────────────────── */
+/* ─── Card Surface ───────────────────────────────────────────────────────── */
+.card-surface {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0) 55%),
+    var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+/* ─── Button System (UNABYSS rounded) ────────────────────────────────────── */
 .btn-primary {
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.875rem 1.75rem;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.5rem;
   background: var(--color-accent);
-  color: #000;
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  color: var(--color-accent-text);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   text-decoration: none;
-  border: none;
-  position: relative;
-  overflow: hidden;
-  transition: color 0.3s;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
   cursor: none;
+  transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out),
+    filter 0.25s;
+  box-shadow: 0 0 0 0 var(--color-accent-soft);
 }
 
-.btn-primary::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: #000;
-  transform: translateY(101%);
-  transition: transform 0.4s var(--ease-out);
+.btn-primary:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px -10px rgba(215, 255, 63, 0.4);
 }
-
-.btn-primary:hover { color: #fff; }
-.btn-primary:hover::before { transform: translateY(0); }
-.btn-primary > * { position: relative; z-index: 1; }
 
 .btn-outline {
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.875rem 1.75rem;
-  background: transparent;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.5rem;
+  background: rgba(255, 255, 255, 0.035);
   color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  cursor: none;
+  transition: border-color 0.25s, background 0.25s, transform 0.25s var(--ease-out);
+}
+
+.btn-outline:hover {
+  border-color: var(--color-border-active);
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-2px);
+}
+
+/* ─── Tech / Tag Chip ────────────────────────────────────────────────────── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.02);
   font-family: var(--font-mono);
   font-size: 0.6875rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  text-decoration: none;
-  border: 1px solid var(--color-border);
-  position: relative;
-  overflow: hidden;
-  transition: border-color 0.3s, color 0.3s;
-  cursor: none;
+  letter-spacing: 0.02em;
+  color: var(--color-text-muted);
 }
-
-.btn-outline::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--color-accent);
-  transform: translateY(101%);
-  transition: transform 0.4s var(--ease-out);
-}
-
-.btn-outline:hover { border-color: var(--color-accent); color: #000; }
-.btn-outline:hover::before { transform: translateY(0); }
-.btn-outline > * { position: relative; z-index: 1; }
 
 /* ─── Scroll Reveal Defaults ─────────────────────────────────────────────── */
 .reveal {
@@ -315,4 +376,16 @@ body.cursor-hover .cursor-ring {
 
 .bg-panel {
   background: var(--color-panel);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

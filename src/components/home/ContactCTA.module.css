@@ -1,41 +1,53 @@
 .section {
   padding: var(--section-py) var(--section-px);
-  border-top: 1px solid var(--color-border);
 }
 
 .inner {
+  position: relative;
   max-width: var(--max-w);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5rem;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: clamp(2.5rem, 5vw, 4.5rem);
+  align-items: center;
+  padding: clamp(2.5rem, 5vw, 4.5rem);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background:
+    radial-gradient(80% 130% at 0% 0%, var(--color-accent-dim), transparent 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0) 55%),
+    var(--color-panel);
+  overflow: hidden;
 }
 
 .left {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  align-items: flex-start;
+  gap: 1.5rem;
 }
 
 .available {
   display: inline-flex;
   align-items: center;
-  gap: 0.625rem;
-  border: 1px solid rgba(34, 197, 94, 0.4);
-  padding: 0.75rem 1.25rem;
+  gap: 0.55rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  padding: 0.45rem 0.9rem;
+  background: var(--color-accent-dim);
   font-family: var(--font-mono);
   font-size: 0.625rem;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #22c55e;
-  align-self: flex-start;
+  color: var(--color-accent);
 }
 
 .availDot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #22c55e;
+  background: var(--color-accent);
+  box-shadow: 0 0 8px var(--color-accent);
   animation: pulse 2s ease-in-out infinite;
 }
 
@@ -45,93 +57,95 @@
 }
 
 .heading {
-  font-size: clamp(2.5rem, 5.5vw, 5rem);
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 0.95;
+  font-size: clamp(2.25rem, 4.8vw, 3.75rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
 }
 
 .heading em {
-  font-style: italic;
-  font-weight: 300;
-  color: var(--color-text-muted);
+  font-style: normal;
+  color: var(--color-accent);
 }
 
 .description {
-  font-size: 0.9375rem;
+  font-size: 1rem;
   color: var(--color-text-muted);
-  line-height: 1.75;
-  max-width: 380px;
+  line-height: 1.7;
+  max-width: 400px;
 }
 
 .emailBtn {
   display: inline-flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1.125rem 2rem;
+  gap: 0.75rem;
+  padding: 1rem 1.75rem;
+  border-radius: var(--radius-sm);
   background: var(--color-accent);
-  color: #000;
+  color: var(--color-accent-text);
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.02em;
   text-decoration: none;
-  position: relative;
-  overflow: hidden;
-  transition: color 0.4s;
+  border: 1px solid var(--color-accent);
+  cursor: none;
+  transition: filter 0.25s, transform 0.25s var(--ease-out), box-shadow 0.25s;
 }
 
-.emailBtn::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: #000;
-  transform: translateY(101%);
-  transition: transform 0.4s var(--ease-out);
+.emailBtn:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px -12px rgba(215, 255, 63, 0.45);
 }
-
-.emailBtn:hover { color: #fff; }
-.emailBtn:hover::before { transform: translateY(0); }
-.emailBtn > * { position: relative; z-index: 1; }
 
 .right {
-  padding-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .links {
   list-style: none;
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
 }
 
 .linkItem {
-  border-bottom: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
 }
 
 .link {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.25rem 0;
+  gap: 1rem;
+  padding: 1rem 1.15rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.015);
   text-decoration: none;
   color: var(--color-text);
-  transition: color 0.2s;
+  transition: border-color 0.25s, background 0.25s, transform 0.25s var(--ease-out);
 }
 
 .link:hover {
-  color: var(--color-accent);
+  border-color: var(--color-border-active);
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateX(3px);
 }
 
 .linkLabel {
-  font-size: 0.9375rem;
-  font-weight: 500;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .linkSub {
   font-family: var(--font-mono);
   font-size: 0.625rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
   color: var(--color-text-muted);
+  text-align: right;
   transition: color 0.2s;
 }
 
@@ -142,7 +156,7 @@
 @media (max-width: 900px) {
   .inner {
     grid-template-columns: 1fr;
-    gap: 3rem;
+    gap: 2.5rem;
   }
 }
 

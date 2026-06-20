@@ -13,6 +13,9 @@ interface ExperienceStore extends ExperienceState {
   setEarthFormed: (formed: boolean) => void;
   setActiveService: (service: 'design' | 'data' | 'ai' | null) => void;
   setIntroDone: (done: boolean) => void;
+  // Hero gravity-well core: present by default; the header logo toggles it.
+  corePresent: boolean;
+  toggleCore: () => void;
 }
 
 export const useExperience = create<ExperienceStore>((set) => ({
@@ -27,6 +30,7 @@ export const useExperience = create<ExperienceStore>((set) => ({
   earthFormed: false,
   activeService: null,
   introDone: false,
+  corePresent: true,
 
   setActiveSection: (section) => set({ activeSection: section }),
   setSectionProgress: (progress) => set({ sectionProgress: progress }),
@@ -39,4 +43,5 @@ export const useExperience = create<ExperienceStore>((set) => ({
   setEarthFormed: (formed) => set({ earthFormed: formed }),
   setActiveService: (service) => set({ activeService: service }),
   setIntroDone: (done) => set({ introDone: done }),
+  toggleCore: () => set((s) => ({ corePresent: !s.corePresent })),
 }));

@@ -2,7 +2,8 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Hero } from '@/components/home/Hero';
 import { Marquee } from '@/components/home/Marquee';
-import { Services } from '@/components/home/Services';
+import { Workflow } from '@/components/home/Workflow';
+import { TechGrid } from '@/components/home/TechGrid';
 import { Metrics } from '@/components/home/Metrics';
 import { Projects } from '@/components/home/Projects';
 import { GDGFeature } from '@/components/home/GDGFeature';
@@ -16,7 +17,8 @@ export default function HomePage() {
       <main>
         <Hero />
         <Marquee />
-        <Services />
+        <Workflow />
+        <TechGrid />
         <Metrics />
         <Projects />
         <GDGFeature />
